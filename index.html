@@ -1,0 +1,458 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="robots" content="noindex, nofollow, noarchive, nosnippet">
+<style>:root{color-scheme:light}html,body{margin:0}img{max-width:100%}</style>
+<title>코드샵 결제 구조 전환 제안</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+KR:wght@300;400;500;600;700&family=IBM+Plex+Mono:wght@400;500;600&display=swap">
+<style>
+/* 세로형 보고서. 단일 컬럼 760px, 본문 위에 번호 붙은 절, 각 절 아래 번호 붙은 도표. */
+:root{
+  --paper:#FAFAFB; --panel:#FFFFFF; --ink:#15181F; --ink-2:#4A5260; --ink-3:#79818F;
+  --rule:#DCDEE4; --rule-2:#EDEEF2; --accent:#1F5C78; --accent-soft:#EAF1F5; --accent-ink:#154558;
+  --on-accent:#FFFFFF; --on-accent-2:#CDE2EC;
+  --sans:"IBM Plex Sans KR", "Apple SD Gothic Neo", "Malgun Gothic", sans-serif;
+  --mono:"IBM Plex Mono", "IBM Plex Sans KR", monospace;
+  color-scheme:light;
+}
+body{background:var(--paper);color:var(--ink);font-family:var(--sans);font-size:16px;line-height:1.75;-webkit-font-smoothing:antialiased}
+.wrap{max-width:780px;margin:0 auto;padding-left:max(20px,env(safe-area-inset-left,0px));padding-right:max(20px,env(safe-area-inset-right,0px));padding-block:0 72px}
+p{margin:0}
+h1,h2,h3{margin:0;text-wrap:balance;font-weight:600;letter-spacing:-0.01em}
+
+/* 표지 */
+.cover{padding-block:64px 44px;border-bottom:2px solid var(--ink);display:flex;flex-direction:column;gap:28px}
+.eyebrow{font-family:var(--mono);font-size:12px;font-weight:500;letter-spacing:.18em;text-transform:uppercase;color:var(--accent)}
+.cover h1{font-size:clamp(30px,6.4vw,42px);line-height:1.28;font-weight:700}
+.cover .sub{font-size:17px;color:var(--ink-2);line-height:1.7}
+.meta{display:flex;flex-wrap:wrap;gap:8px 28px;font-size:13px;color:var(--ink-3);font-family:var(--mono)}
+
+/* 요약 */
+.summary{padding-block:40px;border-bottom:1px solid var(--rule);display:flex;flex-direction:column;gap:26px}
+.kpis{display:grid;grid-template-columns:repeat(3,1fr);gap:1px;background:var(--rule);border:1px solid var(--rule)}
+.kpi{background:var(--panel);padding:20px 18px;display:flex;flex-direction:column;gap:5px;min-width:0}
+.kpi b{font-family:var(--mono);font-size:clamp(22px,5.2vw,30px);font-weight:600;color:var(--accent);font-variant-numeric:tabular-nums;line-height:1.1}
+.kpi span{font-size:13px;color:var(--ink-2);line-height:1.5}
+@media(max-width:520px){.kpis{grid-template-columns:1fr}}
+
+/* 절 */
+section.sec{padding-block:44px;border-bottom:1px solid var(--rule);display:flex;flex-direction:column;gap:20px}
+.sechead{display:flex;gap:16px;align-items:baseline}
+.secnum{font-family:var(--mono);font-size:13px;font-weight:600;color:var(--accent);letter-spacing:.06em;flex:none;padding-top:4px}
+.sechead h2{font-size:clamp(21px,4.4vw,26px);line-height:1.35}
+.lead{font-size:17px;color:var(--ink);line-height:1.75}
+.body{font-size:15.5px;color:var(--ink-2);line-height:1.8;display:flex;flex-direction:column;gap:14px}
+
+/* 도표 */
+figure{margin:0;display:flex;flex-direction:column;gap:10px}
+figcaption{font-family:var(--mono);font-size:11.5px;font-weight:500;letter-spacing:.12em;text-transform:uppercase;color:var(--ink-3);padding-bottom:7px;border-bottom:1px solid var(--rule)}
+figcaption b{color:var(--accent);font-weight:600}
+.note{font-size:12.5px;color:var(--ink-3);line-height:1.6;padding-top:4px}
+
+/* 표 */
+.tablewrap{overflow-x:auto}
+table{border-collapse:collapse;width:100%;font-size:14.5px;min-width:380px}
+th,td{padding:11px 10px;text-align:left;border-bottom:1px solid var(--rule-2);vertical-align:top;line-height:1.55}
+thead th{font-size:12px;font-weight:600;color:var(--ink-3);letter-spacing:.04em;border-bottom:1px solid var(--rule);white-space:nowrap}
+td.num,th.num{text-align:right;font-family:var(--mono);font-variant-numeric:tabular-nums;white-space:nowrap}
+tr.hi td{background:var(--accent-soft);color:var(--ink)}
+td.key{font-weight:500;color:var(--ink)}
+td.pick{color:var(--accent-ink);font-weight:600}
+
+/* 원인-증상 */
+.cause{background:var(--panel);border:1px solid var(--rule);padding:20px;display:flex;flex-direction:column;gap:7px}
+.cause b{font-size:16px;font-weight:600;line-height:1.5}
+.cause span{font-size:14px;color:var(--ink-2)}
+.branch{display:grid;grid-template-columns:repeat(3,1fr);gap:1px;background:var(--rule);border:1px solid var(--rule);border-top:none}
+.branch div{background:var(--panel);padding:16px 18px;display:flex;flex-direction:column;gap:5px;min-width:0}
+.branch b{font-size:14.5px;font-weight:600}
+.branch span{font-size:13px;color:var(--ink-2);line-height:1.55}
+@media(max-width:520px){.branch{grid-template-columns:1fr}}
+.tick{text-align:center;font-family:var(--mono);font-size:12px;color:var(--ink-3);padding:6px 0 0}
+
+/* 막대 */
+.bar{display:flex;border:1px solid var(--rule);overflow:hidden}
+.bar div{padding:14px 12px;display:flex;flex-direction:column;gap:3px;min-width:0}
+.bar b{font-family:var(--mono);font-size:19px;font-weight:600;font-variant-numeric:tabular-nums;line-height:1.2}
+.bar span{font-size:12.5px;line-height:1.4}
+.seg-a{flex:145;background:var(--panel);color:var(--ink-2)}
+.seg-a b{color:var(--ink)}
+.seg-b{flex:85;background:var(--accent-soft);color:var(--ink-2)}
+.seg-b b{color:var(--accent-ink)}
+.seg-c{flex:70;background:var(--accent);color:var(--on-accent-2)}
+.seg-c b{color:var(--on-accent)}
+
+/* 도식 */
+.dia{width:100%;height:auto;display:block;font-family:var(--sans);margin-block:2px}
+.dia .bx{fill:var(--panel);stroke:var(--rule);stroke-width:1}
+.dia .bxa{fill:var(--accent-soft);stroke:var(--accent);stroke-width:1.5}
+.dia .bxd{fill:var(--accent);stroke:none}
+.dia .t{fill:var(--ink);font-size:15px;font-weight:600}
+.dia .ts{fill:var(--ink-2);font-size:12.5px;font-weight:400}
+.dia .tn{fill:var(--ink);font-family:var(--mono);font-size:16px;font-weight:600}
+.dia .tna{fill:var(--accent-ink);font-family:var(--mono);font-size:16px;font-weight:600}
+.dia .tw{fill:var(--on-accent);font-size:15px;font-weight:600}
+.dia .tws{fill:var(--on-accent-2);font-size:12.5px}
+.dia .twn{fill:var(--on-accent);font-family:var(--mono);font-size:18px;font-weight:600}
+.dia .ln{stroke:var(--rule);stroke-width:1.5;fill:none}
+.dia .lnd{stroke:var(--accent);stroke-width:1.5;fill:none;stroke-dasharray:5 4}
+.dia .la{fill:var(--ink-3);font-family:var(--mono);font-size:11px;letter-spacing:.09em}
+
+/* 가로 막대 차트 */
+.chart{display:flex;flex-direction:column;gap:9px}
+.row{display:grid;grid-template-columns:76px 1fr 86px;gap:10px;align-items:center}
+.row .lab{font-size:13.5px;color:var(--ink-2);white-space:nowrap}
+.row .track{height:22px;background:var(--rule-2);position:relative;min-width:0}
+.row .fill{height:100%;background:var(--accent)}
+.row .val{font-family:var(--mono);font-size:13.5px;font-variant-numeric:tabular-nums;text-align:right;color:var(--ink);white-space:nowrap}
+.chart2{display:flex;flex-direction:column;gap:9px}
+.chrow{display:grid;grid-template-columns:52px minmax(0,1fr) 72px 82px;gap:10px;align-items:center}
+.chrow .lab{font-size:13.5px;color:var(--ink-2);white-space:nowrap}
+.chrow .track{height:24px;background:var(--rule-2);position:relative;min-width:0}
+.chrow .f2{position:absolute;left:0;top:0;height:100%;background:var(--accent-soft);border-right:2px solid var(--accent)}
+.chrow .f1{position:absolute;left:0;top:0;height:100%;background:var(--accent)}
+.chrow .v,.chrow .v2{font-family:var(--mono);font-size:13px;font-variant-numeric:tabular-nums;text-align:right;white-space:nowrap}
+.chrow .v{color:var(--ink)}
+.chrow .v2{color:var(--accent-ink);font-weight:600}
+.chrow.head .v,.chrow.head .v2{font-family:var(--sans);font-size:11.5px;letter-spacing:.06em;color:var(--ink-3);font-weight:500}
+
+/* 흐름 */
+.flow{display:flex;flex-direction:column;border:1px solid var(--rule)}
+.step{display:grid;grid-template-columns:1fr auto;gap:12px;padding:14px 18px;border-bottom:1px solid var(--rule-2);align-items:baseline}
+.step:last-child{border-bottom:none}
+.step .who{font-size:14.5px;font-weight:500}
+.step .who em{display:block;font-style:normal;font-size:13px;color:var(--ink-2);font-weight:400;margin-top:2px}
+.step .amt{font-family:var(--mono);font-size:15px;font-variant-numeric:tabular-nums;white-space:nowrap}
+.step.start{background:var(--panel)}
+.step.end{background:var(--accent-soft)}
+.step.end .amt{color:var(--accent-ink);font-weight:600}
+
+/* 목록 */
+ol.steps{margin:0;padding-left:0;list-style:none;counter-reset:s;display:flex;flex-direction:column;gap:14px}
+ol.steps li{counter-increment:s;display:grid;grid-template-columns:28px minmax(0,1fr);gap:12px;font-size:15.5px;color:var(--ink-2);line-height:1.75}
+ol.steps li::before{content:counter(s);font-family:var(--mono);font-size:12.5px;font-weight:600;color:var(--accent);padding-top:5px}
+ol.steps b{color:var(--ink);font-weight:600}
+
+blockquote{margin:0;padding:16px 18px;background:var(--panel);border-left:3px solid var(--accent);font-family:var(--mono);font-size:13px;line-height:1.85;color:var(--ink-2);overflow-x:auto}
+
+.close{padding-block:40px;display:flex;flex-direction:column;gap:14px}
+.close h2{font-size:21px}
+.close p{font-size:15.5px;color:var(--ink-2);line-height:1.8}
+.appx{padding-block:34px;border-top:1px solid var(--rule);display:flex;flex-direction:column;gap:16px}
+.appx h3{font-size:17px;font-weight:600;display:flex;flex-wrap:wrap;gap:6px 14px;align-items:baseline}
+.appx h3 em{font-style:normal;font-family:var(--mono);font-size:11.5px;font-weight:500;letter-spacing:.12em;color:var(--accent)}
+footer{padding-block:24px;border-top:1px solid var(--rule);font-family:var(--mono);font-size:11.5px;color:var(--ink-3);letter-spacing:.06em}
+</style>
+
+</head>
+<body>
+<div class="wrap">
+
+<header class="cover">
+  <p class="eyebrow">제안서</p>
+  <h1>결제대행사 전환과 수익 구조</h1>
+  <p class="sub">엔에이치엔 케이씨피에서 2차 PG사로 옮기고, 장례식장을 각각 하위 가맹점으로 등록합니다. 장례식장 부담은 3%로 유지하며, 결제 건마다 코드샵에 0.50%가 남습니다.</p>
+  <div class="meta"><span>코드샵 귀중</span><span>2026년 11월</span><span>작성 · 키스톤파트너스</span></div>
+</header>
+
+<section class="sec">
+  <div class="sechead"><span class="secnum">01</span><h2>해결해야 하는 것 셋과 그 원인</h2></div>
+  <div class="body">
+    <p>코드샵이 결제에서 막혀 있는 지점은 셋입니다. 유족 휴대폰에 뜨는 카드 승인 문자에 장례식장 이름이 찍히지 않고, 장례식장을 한 곳 붙일 때마다 심사가 밀리며, 단말기를 장례식장이 직접 삽니다.</p>
+    <p>세 가지는 증상입니다. 원인은 하나입니다.</p>
+  </div>
+  <figure>
+    <figcaption><b>도표 1</b> · 하나의 원인에서 나온 세 증상</figcaption>
+    <svg class="dia" viewBox="0 0 700 292" role="img" aria-label="하나의 원인에서 상호 미표시, 심사 지연, 단말기 구매 세 증상이 갈라져 나오는 그림">
+      <rect class="bxd" x="40" y="6" width="620" height="78" rx="3"/>
+      <text class="tw" x="350" y="38" text-anchor="middle">코드샵이 중간 사업자 없이 결제대행사와 직접 붙어 있습니다</text>
+      <text class="tws" x="350" y="63" text-anchor="middle">가맹점 관리 · 심사 · 단말 공급을 전부 혼자 집니다</text>
+      <path class="ln" d="M350 84 V112 M135 112 H565 M135 112 V144 M350 112 V144 M565 112 V144"/>
+      <rect class="bx" x="40" y="144" width="190" height="132" rx="3"/>
+      <text class="t" x="135" y="178" text-anchor="middle">상호 미표시</text>
+      <text class="ts" x="135" y="210" text-anchor="middle">가맹점 코드 하나로</text>
+      <text class="ts" x="135" y="231" text-anchor="middle">여러 장례식장을</text>
+      <text class="ts" x="135" y="252" text-anchor="middle">돌리고 있습니다</text>
+      <rect class="bx" x="255" y="144" width="190" height="132" rx="3"/>
+      <text class="t" x="350" y="178" text-anchor="middle">심사 지연</text>
+      <text class="ts" x="350" y="210" text-anchor="middle">대행하는 곳 없이</text>
+      <text class="ts" x="350" y="231" text-anchor="middle">코드샵이 직접</text>
+      <text class="ts" x="350" y="252" text-anchor="middle">신청하고 기다립니다</text>
+      <rect class="bx" x="470" y="144" width="190" height="132" rx="3"/>
+      <text class="t" x="565" y="178" text-anchor="middle">단말기 구매</text>
+      <text class="ts" x="565" y="210" text-anchor="middle">단말을 공급하는</text>
+      <text class="ts" x="565" y="231" text-anchor="middle">영업점 자리가</text>
+      <text class="ts" x="565" y="252" text-anchor="middle">비어 있습니다</text>
+    </svg>
+  </figure>
+  <p class="note">카드 승인 문자는 카드사가 보냅니다. 거기 찍히는 이름은 카드사에 등록된 가맹점명이라, 영수증 문구를 코드샵이 직접 넣는 것과 달리 시스템에서 바꿀 수 없습니다.</p>
+</section>
+
+<section class="sec">
+  <div class="sechead"><span class="secnum">02</span><h2>제안 — 비어 있던 중간 자리를 채웁니다</h2></div>
+  <div class="body">
+    <p>지금 쓰는 엔에이치엔 케이씨피에서 <b>2차 PG사</b>로 옮깁니다. 2차 PG사는 카드사와 직접 계약한 1차 PG사 아래에서 가맹점을 모집하고 관리하는 회사입니다.</p>
+    <p>핵심은 회사를 바꾸는 것이 아니라, <b>장례식장을 각각 하위 가맹점으로 등록</b>하는 것입니다. 그래야 가맹점 번호와 단말기 번호가 따로 생기고, 상호가 제대로 찍힙니다.</p>
+  </div>
+  <figure>
+    <figcaption><b>도표 2</b> · 누가 무엇을 맡는가</figcaption>
+    <svg class="dia" viewBox="0 0 700 352" role="img" aria-label="카드사에서 2차 PG사를 거쳐 장례식장 각각으로 돈이 가고, 코드샵은 2차 PG사에서 수수료를 배분받는 관계도">
+      <defs><marker id="a2" viewBox="0 0 10 10" refX="8.5" refY="5" markerWidth="6" markerHeight="6" orient="auto"><path d="M0 1 L9 5 L0 9 z" fill="var(--ink-3)"/></marker>
+      <marker id="a2d" viewBox="0 0 10 10" refX="8.5" refY="5" markerWidth="6" markerHeight="6" orient="auto"><path d="M0 1 L9 5 L0 9 z" fill="var(--accent)"/></marker></defs>
+      <rect class="bx" x="10" y="142" width="140" height="72" rx="3"/>
+      <text class="t" x="80" y="174" text-anchor="middle">카드사</text>
+      <text class="ts" x="80" y="196" text-anchor="middle">승인 · 지급</text>
+      <path class="ln" d="M152 178 H190" marker-end="url(#a2)"/>
+      <rect class="bxd" x="198" y="142" width="180" height="72" rx="3"/>
+      <text class="tw" x="288" y="174" text-anchor="middle">2차 PG사</text>
+      <text class="tws" x="288" y="196" text-anchor="middle">가맹점 등록 · 정산</text>
+      <path class="ln" d="M380 168 L440 74" marker-end="url(#a2)"/>
+      <path class="ln" d="M382 178 H440" marker-end="url(#a2)"/>
+      <path class="ln" d="M380 188 L440 282" marker-end="url(#a2)"/>
+      <rect class="bx" x="448" y="36" width="240" height="56" rx="3"/>
+      <text class="t" x="568" y="60" text-anchor="middle">장례식장 가</text>
+      <text class="ts" x="568" y="80" text-anchor="middle">하위 가맹점으로 개별 등록</text>
+      <rect class="bx" x="448" y="148" width="240" height="56" rx="3"/>
+      <text class="t" x="568" y="172" text-anchor="middle">장례식장 나</text>
+      <text class="ts" x="568" y="192" text-anchor="middle">하위 가맹점으로 개별 등록</text>
+      <rect class="bx" x="448" y="260" width="240" height="56" rx="3"/>
+      <text class="t" x="568" y="284" text-anchor="middle">장례식장 다</text>
+      <text class="ts" x="568" y="304" text-anchor="middle">하위 가맹점으로 개별 등록</text>
+      <path class="lnd" d="M288 216 V256" marker-end="url(#a2d)"/>
+      <text class="la" x="300" y="242">수수료 배분</text>
+      <rect class="bxa" x="198" y="262" width="180" height="66" rx="3"/>
+      <text class="t" x="288" y="292" text-anchor="middle">코드샵</text>
+      <text class="ts" x="288" y="312" text-anchor="middle">장례식장 모집 · 시스템</text>
+    </svg>
+  </figure>
+  <p class="note">돈은 카드사에서 2차 PG사를 거쳐 장례식장 계좌로 갑니다. 코드샵은 돈을 만지지 않고 2차 PG사에서 몫을 받습니다. 2차 PG사는 전자지급결제대행업 등록 사업자이며, 하위 가맹점 개별 등록을 이미 다른 거래처에서 운영하고 있습니다.</p>
+</section>
+
+<section class="sec">
+  <div class="sechead"><span class="secnum">03</span><h2>세 가지가 함께 풀립니다</h2></div>
+  <figure>
+    <figcaption><b>도표 3</b> · 문제별 해결과 책임 주체</figcaption>
+    <div class="tablewrap"><table>
+      <thead><tr><th style="width:30%">지금</th><th>바뀐 뒤</th><th class="num" style="width:17%">책임</th></tr></thead>
+      <tbody>
+        <tr><td class="key">상호가 안 나온다</td><td>장례식장별 하위 가맹점 등록 → 영수증과 승인 문자에 상호 표시</td><td class="num">2차 PG사</td></tr>
+        <tr><td class="key">심사가 밀린다</td><td>등록 대행과 자동 등록 창구 제공. 코드샵은 서류만 넘깁니다</td><td class="num">2차 PG사</td></tr>
+        <tr><td class="key">단말기를 직접 산다</td><td>단말기 무상 공급 또는 임대</td><td class="num">2차 PG사</td></tr>
+      </tbody>
+    </table></div>
+  </figure>
+  <div class="body">
+    <p>한 가지는 분명히 해 두어야 합니다. 결제대행사를 바꾼다고 이 셋이 저절로 풀리지는 않습니다. <b>2차 PG사가 책임진다는 조건을 계약서에 적어야</b> 풀립니다. 다음 문장을 계약서에 넣습니다.</p>
+  </div>
+  <blockquote>2차 PG사는 장례식장별 하위 가맹점 등록을 대행하고 자동 등록 창구를 제공한다.<br>신규 가맹점 등록은 접수 후 ○영업일 안에 처리한다.<br>단말기는 무상 공급 또는 임대로 제공한다.</blockquote>
+</section>
+
+<section class="sec">
+  <div class="sechead"><span class="secnum">04</span><h2>3%가 나뉘는 방식</h2></div>
+  <div class="body">
+    <p>장례식장이 내는 금액은 바뀌지 않습니다. 지금과 같은 3%입니다. 그 안에서 나누는 방식만 달라집니다.</p>
+  </div>
+  <figure>
+    <figcaption><b>도표 4</b> · 3.00%의 구성</figcaption>
+    <div class="tablewrap"><table>
+      <thead><tr><th style="width:38%">항목</th><th class="num" style="width:18%">비율</th><th>받는 쪽</th></tr></thead>
+      <tbody>
+        <tr><td class="key">카드 수수료</td><td class="num">1.45%</td><td>카드사</td></tr>
+        <tr><td class="key">2차 PG사</td><td class="num">0.85%</td><td>2차 PG사</td></tr>
+        <tr><td class="key">솔루션 이용료</td><td class="num">0.50%</td><td>코드샵</td></tr>
+        <tr><td class="key">대행 수수료</td><td class="num">0.20%</td><td>키스톤파트너스</td></tr>
+        <tr class="hi"><td class="key">합계</td><td class="num">3.00%</td><td>장례식장 부담</td></tr>
+      </tbody>
+    </table></div>
+    <p class="note">카드 수수료는 금융위원회가 정한 우대수수료율이며, 연매출 10억~30억 장례식장 기준입니다.</p>
+  </figure>
+  <figure>
+    <figcaption><b>도표 5</b> · 코드샵이 2차 PG사를 직접 운영할 경우</figcaption>
+    <div class="tablewrap"><table>
+      <thead><tr><th style="width:30%">항목</th><th class="num" style="width:15%">비율</th><th style="width:27%">지금</th><th>직접 운영 시</th></tr></thead>
+      <tbody>
+        <tr><td class="key">카드 수수료</td><td class="num">1.45%</td><td>카드사</td><td>카드사</td></tr>
+        <tr><td class="key">2차 PG사</td><td class="num">0.85%</td><td>2차 PG사</td><td class="pick">코드샵</td></tr>
+        <tr><td class="key">솔루션 이용료</td><td class="num">0.50%</td><td>코드샵</td><td>코드샵</td></tr>
+        <tr><td class="key">대행 수수료</td><td class="num">0.20%</td><td>키스톤파트너스</td><td>키스톤파트너스</td></tr>
+        <tr class="hi"><td class="key">코드샵 몫</td><td class="num">—</td><td class="num">0.50%</td><td class="num pick">1.35%</td></tr>
+      </tbody>
+    </table></div>
+    <p class="note">받는 쪽만 바뀌고 장례식장 부담은 3%로 같습니다.</p>
+  </figure>
+  <figure>
+    <figcaption><b>도표 6</b> · 가맹점 수에 따른 코드샵 월 수익</figcaption>
+    <div class="chart2">
+      <div class="chrow head"><span></span><span></span><span class="v">지금</span><span class="v2">직접 운영 시</span></div>
+      <div class="chrow"><span class="lab">10곳</span><span class="track"><span class="f2" style="width:20%"></span><span class="f1" style="width:7.4%"></span></span><span class="v">136만원</span><span class="v2">368만원</span></div>
+      <div class="chrow"><span class="lab">20곳</span><span class="track"><span class="f2" style="width:40%"></span><span class="f1" style="width:14.8%"></span></span><span class="v">273만원</span><span class="v2">736만원</span></div>
+      <div class="chrow"><span class="lab">30곳</span><span class="track"><span class="f2" style="width:60%"></span><span class="f1" style="width:22.2%"></span></span><span class="v">409만원</span><span class="v2">1,105만원</span></div>
+      <div class="chrow"><span class="lab">50곳</span><span class="track"><span class="f2" style="width:100%"></span><span class="f1" style="width:37%"></span></span><span class="v">682만원</span><span class="v2">1,841만원</span></div>
+    </div>
+    <p class="note">가맹점 한 곳의 월 카드 매출을 3,000만원으로 놓고 계산한 값입니다. 부가세를 뺀 금액입니다.</p>
+  </figure>
+</section>
+
+<section class="sec">
+  <div class="sechead"><span class="secnum">05</span><h2>돈이 흐르는 경로</h2></div>
+  <div class="body">
+    <p>계약은 둘로 나누되 차감은 한 번입니다. 장례식장이 따로 낼 것은 없습니다.</p>
+  </div>
+  <figure>
+    <figcaption><b>도표 7</b> · 100만원 결제 한 건의 흐름</figcaption>
+    <svg class="dia" viewBox="0 0 700 414" role="img" aria-label="100만원 결제가 2차 PG사에서 3만원 차감된 뒤 장례식장에 97만원 입금되고, 차감한 3만원이 카드사 2차 PG사 코드샵 대행 수수료로 나뉘는 흐름도">
+      <defs><marker id="a7" viewBox="0 0 10 10" refX="8.5" refY="5" markerWidth="6" markerHeight="6" orient="auto"><path d="M0 1 L9 5 L0 9 z" fill="var(--ink-3)"/></marker></defs>
+      <rect class="bx" x="150" y="6" width="400" height="68" rx="3"/>
+      <text class="t" x="350" y="36" text-anchor="middle">유족이 카드로 결제</text>
+      <text class="tn" x="350" y="60" text-anchor="middle">1,000,000원</text>
+      <path class="ln" d="M350 74 V96" marker-end="url(#a7)"/>
+      <rect class="bx" x="150" y="102" width="400" height="68" rx="3"/>
+      <text class="t" x="350" y="132" text-anchor="middle">2차 PG사가 한 번에 차감</text>
+      <text class="tn" x="350" y="156" text-anchor="middle">− 30,000원 · 3.00%</text>
+      <path class="ln" d="M350 170 V192" marker-end="url(#a7)"/>
+      <rect class="bxd" x="150" y="198" width="400" height="72" rx="3"/>
+      <text class="tw" x="350" y="228" text-anchor="middle">장례식장 입금 · 따로 낼 것 없음</text>
+      <text class="twn" x="350" y="254" text-anchor="middle">970,000원</text>
+      <text class="la" x="16" y="306">차감한 30,000원이 나뉘는 곳</text>
+      <path class="ln" d="M16 318 H684"/>
+      <rect class="bx" x="16" y="330" width="158" height="76" rx="3"/>
+      <text class="ts" x="95" y="356" text-anchor="middle">카드사 · 1.45%</text>
+      <text class="tn" x="95" y="384" text-anchor="middle">14,500원</text>
+      <rect class="bx" x="190" y="330" width="158" height="76" rx="3"/>
+      <text class="ts" x="269" y="356" text-anchor="middle">2차 PG사 · 0.85%</text>
+      <text class="tn" x="269" y="384" text-anchor="middle">8,500원</text>
+      <rect class="bxa" x="364" y="330" width="158" height="76" rx="3"/>
+      <text class="ts" x="443" y="356" text-anchor="middle">코드샵 · 0.50%</text>
+      <text class="tna" x="443" y="384" text-anchor="middle">5,000원</text>
+      <rect class="bx" x="538" y="330" width="158" height="76" rx="3"/>
+      <text class="ts" x="617" y="356" text-anchor="middle">대행 · 0.20%</text>
+      <text class="tn" x="617" y="384" text-anchor="middle">2,000원</text>
+    </svg>
+  </figure>
+  <figure>
+    <figcaption><b>도표 8</b> · 월 정산 명세 표기 예시</figcaption>
+    <div class="tablewrap"><table>
+      <thead><tr><th>항목</th><th class="num">요율</th><th class="num">금액</th></tr></thead>
+      <tbody>
+        <tr><td class="key">카드 수수료</td><td class="num">1.45%</td><td class="num">435,000원</td></tr>
+        <tr><td class="key">2차 PG사 수수료</td><td class="num">0.85%</td><td class="num">255,000원</td></tr>
+        <tr><td class="key">솔루션 이용료</td><td class="num">0.50%</td><td class="num">150,000원</td></tr>
+        <tr><td class="key">대행 수수료</td><td class="num">0.20%</td><td class="num">60,000원</td></tr>
+        <tr class="hi"><td class="key">합계</td><td class="num">3.00%</td><td class="num">900,000원</td></tr>
+      </tbody>
+    </table></div>
+    <p class="note">월 카드 매출 3,000만원 기준. 세금계산서는 결제대행 수수료를 2차 PG사가, 솔루션 이용료를 코드샵이 각각 발행합니다. 결제가 취소되면 코드샵 몫도 함께 환수하는 조건을 계약서에 넣습니다.</p>
+  </figure>
+</section>
+
+<section class="sec">
+  <div class="sechead"><span class="secnum">06</span><h2>규제는 피하지 않고 맞춥니다</h2></div>
+  <div class="body">
+    <p>2026년에 결제 관련 규정 셋이 바뀌었습니다. 항목을 나눠 적는 지금 설계가 오히려 이 규정에 맞습니다. 코드샵 몫에 근거가 생겨 설명하기도 쉬워집니다.</p>
+  </div>
+  <figure>
+    <figcaption><b>도표 9</b> · 2026년 규정 변화와 대응</figcaption>
+    <div class="tablewrap"><table>
+      <thead><tr><th class="num" style="width:17%">시행</th><th style="width:34%">내용</th><th>우리 대응</th></tr></thead>
+      <tbody>
+        <tr><td class="num">7월 15일</td><td class="key">결제수수료 구분 고지 의무</td><td>계약서와 정산 명세에 세 항목으로 나눠 적습니다. 차감은 한 번 그대로입니다</td></tr>
+        <tr><td class="num">8월 14일</td><td class="key">하위 가맹점에 우대수수료율 의무 적용</td><td>카드 수수료는 법정 요율을 그대로 적용합니다. 코드샵 몫은 결제 수수료가 아니라 솔루션 이용료라 별개입니다</td></tr>
+        <tr><td class="num">10월 1일</td><td class="key">하위 결제대행업자 위험평가 의무</td><td>1차 PG사가 2차 PG사를 평가합니다. 코드샵에 직접 영향은 없습니다</td></tr>
+      </tbody>
+    </table></div>
+    <p class="note">출처 · 금융위원회 보도자료 및 전자금융감독규정 개정 고시</p>
+  </figure>
+</section>
+
+<section class="sec">
+  <div class="sechead"><span class="secnum">07</span><h2>진행 계획</h2></div>
+  <div class="body">
+    <p>한 번에 전부 바꾸지 않습니다. 가맹점 한 곳으로 구조를 검증한 뒤 나머지를 옮깁니다.</p>
+  </div>
+  <figure>
+    <figcaption><b>도표 10</b> · 단계와 범위</figcaption>
+    <svg class="dia" viewBox="0 0 700 212" role="img" aria-label="1단계 녹색장례식장 대면 결제에서 2단계 추모담과 코드마켓 온라인 결제로 이어지는 단계 그림">
+      <defs><marker id="a10" viewBox="0 0 10 10" refX="8.5" refY="5" markerWidth="6" markerHeight="6" orient="auto"><path d="M0 1 L9 5 L0 9 z" fill="var(--ink-3)"/></marker></defs>
+      <rect class="bxa" x="10" y="14" width="316" height="176" rx="3"/>
+      <text class="la" x="34" y="46">1단계</text>
+      <text class="t" x="34" y="78">녹색장례식장 대면 결제</text>
+      <text class="ts" x="34" y="112">· 단말 통신 규약 교체</text>
+      <text class="ts" x="34" y="136">· 하위 가맹점 등록</text>
+      <text class="ts" x="34" y="160">· 정산 기록 대조</text>
+      <path class="ln" d="M334 102 H364" marker-end="url(#a10)"/>
+      <rect class="bx" x="372" y="14" width="316" height="176" rx="3"/>
+      <text class="la" x="396" y="46">2단계</text>
+      <text class="t" x="396" y="78">추모담 · 코드마켓</text>
+      <text class="ts" x="396" y="112">· 화환 온라인 결제 이전</text>
+      <text class="ts" x="396" y="136">· 이용권 결제 이전</text>
+      <text class="ts" x="396" y="160">· 가상계좌 연동</text>
+    </svg>
+  </figure>
+  <div class="body">
+    <p>가맹점별로 결제대행사를 켜고 끌 수 있게 만듭니다. 문제가 생기면 전체가 아니라 한 곳만 되돌립니다.</p>
+    <p><b>다음 단계.</b> 2차 PG사와의 계약 조건은 저희가 정리해 가져오겠습니다. 코드샵에서는 개발 담당과 1단계 착수 시점만 정해 주시면 됩니다.</p>
+  </div>
+</section>
+
+<section class="sec">
+  <div class="sechead"><span class="secnum">08</span><h2>진행 방식 제안</h2></div>
+  <div class="body">
+    <p>결제 전환은 되돌리기가 어려운 작업입니다. 카드사 심사가 걸려 있고 가맹점 계약이 묶여 있어서, 중간에 범위가 바뀌면 이미 올라간 심사를 다시 받아야 합니다. 화면 수정처럼 고쳐서 넘어갈 수 있는 일이 아닙니다.</p>
+    <p>그래서 세 가지를 함께 지켰으면 합니다.</p>
+  </div>
+  <ol class="steps">
+    <li><span><b>범위를 한 장으로 고정합니다.</b> 이번에 하는 것과 하지 않는 것을 적어 둡니다. 특히 1단계에 대면 결제만 포함한다는 점을 명시합니다.</span></li>
+    <li><span><b>요구사항 창구를 하나로 둡니다.</b> 말로 내려온 변경은 그날 안에 글로 옮깁니다. 심사 서류와 계약 조건이 말에 따라 흔들리면 되돌릴 수 없습니다.</span></li>
+    <li><span><b>단계를 쪼개고 되돌릴 수 있게 만듭니다.</b> 가맹점별로 전환을 켜고 끌 수 있게 두면, 문제가 생겨도 한 곳만 되돌리면 됩니다.</span></li>
+  </ol>
+</section>
+
+<div class="close">
+  <h2>정리</h2>
+  <p>장례식장 부담은 3% 그대로입니다. 상호 표시와 심사 지연과 단말기 구매는 2차 PG사가 책임지는 조건으로 함께 풀립니다. 그리고 가맹점을 늘릴수록 코드샵에 0.50%가 쌓입니다.</p>
+  <p>지금 가맹점은 세 곳입니다. 1단계를 녹색장례식장 한 곳으로 시작하되, 가맹점이 늘어날 때를 전제로 계약을 쓰는 편이 좋겠습니다.</p>
+</div>
+
+<div class="appx">
+  <h3><em>참고 1</em>가맹점 등록에 필요한 서류</h3>
+  <p class="note">카드사 심사에 올라가는 서류입니다. 발급에 시간이 걸리니 1단계 착수 전에 모아 두시면 좋겠습니다.</p>
+  <div class="tablewrap"><table>
+    <thead><tr><th style="width:44%">서류</th><th>비고</th></tr></thead>
+    <tbody>
+      <tr><td class="key">사업자등록증 사본</td><td>고유번호증도 가능합니다</td></tr>
+      <tr><td class="key">통장 사본</td><td>카드 대금을 정산받을 계좌</td></tr>
+      <tr><td class="key">대표자 신분증 사본</td><td>주민등록증 또는 운전면허증</td></tr>
+      <tr><td class="key">결제 위임장</td><td>2차 PG사가 보내는 양식에 날인</td></tr>
+      <tr><td class="key">법인인감증명서</td><td>법인만 · 최근 3개월 이내 발급분</td></tr>
+      <tr><td class="key">법인등기사항전부증명서</td><td>법인만 · 최근 3개월 이내 발급분</td></tr>
+      <tr><td class="key">주주명부</td><td>법인만 · 최근 6개월 이내 작성분</td></tr>
+      <tr><td class="key">통신서비스 이용증명원</td><td>문자 발신번호를 쓰는 경우</td></tr>
+      <tr><td class="key">문자 위임장</td><td>문자 발신번호를 쓰는 경우</td></tr>
+    </tbody>
+  </table></div>
+  <p class="note">추모담은 개인사업자라 법인 서류 세 가지가 빠집니다. 녹색장례식장과 코드마켓 주식회사는 전부 필요합니다.</p>
+</div>
+
+<div class="appx">
+  <h3><em>참고 2</em>확인 중인 사항</h3>
+  <p class="note">구조와 요율은 정해졌습니다. 아래는 계약서를 쓰기 전에 2차 PG사와 맞추고 있는 실무 항목입니다.</p>
+  <div class="tablewrap"><table>
+    <thead><tr><th style="width:26%">분류</th><th>항목</th></tr></thead>
+    <tbody>
+      <tr><td class="key">요율과 정산</td><td>연매출 30억 초과 가맹점 요율 · 코드샵 몫 전달 주기 · 결제 취소 시 코드샵 몫 환수 · 코드샵이 모집한 가맹점의 귀속</td></tr>
+      <tr><td class="key">등록과 단말</td><td>신규 가맹점 등록 처리 기한 · 단말기 공급 조건 · 지금 쓰는 카드리더기 호환 여부</td></tr>
+      <tr><td class="key">연동</td><td>할부 지정 방법 · 단건 승인 한도 · 가상계좌와 결제대금 예치 명세 · 결제 결과 통지 수신 명세 · 소프트웨어 카드단말 연동 규격 · 시험 환경 계정</td></tr>
+      <tr><td class="key">이관</td><td>기존 가맹점 이관 절차와 기간 · 전환 기간 중 두 결제대행사 병행 운영</td></tr>
+    </tbody>
+  </table></div>
+</div>
+
+<footer>코드샵 결제 구조 전환 제안 · 2026년 11월 · 키스톤파트너스</footer>
+
+</div>
+
+</body>
+</html>
