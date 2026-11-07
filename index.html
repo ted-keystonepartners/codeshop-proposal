@@ -259,16 +259,16 @@ footer{padding-block:24px;border-top:1px solid var(--rule);font-family:var(--mon
   <figure>
     <figcaption><b>도표 4</b> · 3.00%의 구성</figcaption>
     <div class="tablewrap"><table>
-      <thead><tr><th style="width:38%">항목</th><th class="num" style="width:18%">비율</th><th>받는 쪽</th></tr></thead>
+      <thead><tr><th style="width:28%">항목</th><th class="num" style="width:14%">비율</th><th style="width:26%">받는 쪽</th><th>2차 PG사 계약</th></tr></thead>
       <tbody>
-        <tr><td class="key">카드 수수료</td><td class="num">1.45%</td><td>카드사</td></tr>
+        <tr><td class="key">카드 수수료</td><td class="num">1.45%</td><td>카드사</td><td rowspan="2" class="key" style="vertical-align:middle;border-left:1px solid var(--rule-2)">2.30%<br><span style="font-weight:400;color:var(--ink-2)">2차 PG사 요율</span></td></tr>
         <tr><td class="key">2차 PG사</td><td class="num">0.85%</td><td>2차 PG사</td></tr>
-        <tr><td class="key">솔루션 이용료</td><td class="num">0.50%</td><td>코드샵</td></tr>
+        <tr><td class="key">솔루션 이용료</td><td class="num">0.50%</td><td>코드샵</td><td rowspan="2" class="pick" style="vertical-align:middle;border-left:1px solid var(--rule-2)">0.70%<br><span style="font-weight:400;color:var(--ink-2)">코드샵 몫</span></td></tr>
         <tr><td class="key">대행 수수료</td><td class="num">0.20%</td><td>키스톤파트너스</td></tr>
-        <tr class="hi"><td class="key">합계</td><td class="num">3.00%</td><td>장례식장 부담</td></tr>
+        <tr class="hi"><td class="key">합계</td><td class="num">3.00%</td><td>장례식장 부담</td><td class="key" style="border-left:1px solid var(--rule-2)">3.00%</td></tr>
       </tbody>
     </table></div>
-    <p class="note">카드 수수료는 금융위원회가 정한 우대수수료율이며, 연매출 10억~30억 장례식장 기준입니다.</p>
+    <p class="note">2차 PG사와의 계약에는 2차 PG사 요율 2.30%와 코드샵 몫 0.70%만 들어갑니다. 대행 수수료 0.20%는 2차 PG사를 거치지 않고, 코드샵이 받은 0.70% 안에서 코드샵과 키스톤파트너스가 정산합니다. 카드 수수료는 금융위원회가 정한 우대수수료율이며, 연매출 10억~30억 장례식장 기준입니다.</p>
   </figure>
   <figure>
     <figcaption><b>도표 5</b> · 코드샵이 2차 PG사를 직접 운영할 경우</figcaption>
@@ -301,10 +301,11 @@ footer{padding-block:24px;border-top:1px solid var(--rule);font-family:var(--mon
   <div class="sechead"><span class="secnum">05</span><h2>돈이 흐르는 경로</h2></div>
   <div class="body">
     <p>계약은 장례식장마다 2차 PG사와 직접 맺고, 정산도 2차 PG사가 장례식장에 직접 합니다. 차감은 한 번이고, 장례식장이 따로 낼 것은 없습니다.</p>
+    <p>2차 PG사는 차감한 3%에서 자기 요율 2.30%를 가지고, 나머지 0.70%를 코드샵에 보냅니다. 대행 수수료는 그 0.70% 안에서 코드샵이 정산합니다.</p>
   </div>
   <figure>
     <figcaption><b>도표 7</b> · 100만원 결제 한 건의 흐름</figcaption>
-    <svg class="dia" viewBox="0 0 700 414" role="img" aria-label="100만원 결제가 2차 PG사에서 3만원 차감된 뒤 장례식장에 97만원 입금되고, 차감한 3만원이 카드사 2차 PG사 코드샵 대행 수수료로 나뉘는 흐름도">
+    <svg class="dia" viewBox="0 0 700 540" role="img" aria-label="100만원 결제가 2차 PG사에서 3만원 차감된 뒤 장례식장에 97만원 입금되고, 차감한 3만원 중 2만3천원은 2차 PG사가 가지고 7천원은 코드샵에 전달되며, 코드샵이 그 안에서 대행 수수료 2천원을 정산하는 흐름도">
       <defs><marker id="a7" viewBox="0 0 10 10" refX="8.5" refY="5" markerWidth="6" markerHeight="6" orient="auto"><path d="M0 1 L9 5 L0 9 z" fill="var(--ink-3)"/></marker></defs>
       <rect class="bx" x="150" y="6" width="400" height="68" rx="3"/>
       <text class="t" x="350" y="36" text-anchor="middle">유족이 카드로 결제</text>
@@ -319,33 +320,38 @@ footer{padding-block:24px;border-top:1px solid var(--rule);font-family:var(--mon
       <text class="twn" x="350" y="254" text-anchor="middle">970,000원</text>
       <text class="la" x="16" y="306">차감한 30,000원이 나뉘는 곳</text>
       <path class="ln" d="M16 318 H684"/>
-      <rect class="bx" x="16" y="330" width="158" height="76" rx="3"/>
-      <text class="ts" x="95" y="356" text-anchor="middle">카드사 · 1.45%</text>
-      <text class="tn" x="95" y="384" text-anchor="middle">14,500원</text>
-      <rect class="bx" x="190" y="330" width="158" height="76" rx="3"/>
-      <text class="ts" x="269" y="356" text-anchor="middle">2차 PG사 · 0.85%</text>
-      <text class="tn" x="269" y="384" text-anchor="middle">8,500원</text>
-      <rect class="bxa" x="364" y="330" width="158" height="76" rx="3"/>
-      <text class="ts" x="443" y="356" text-anchor="middle">코드샵 · 0.50%</text>
-      <text class="tna" x="443" y="384" text-anchor="middle">5,000원</text>
-      <rect class="bx" x="538" y="330" width="158" height="76" rx="3"/>
-      <text class="ts" x="617" y="356" text-anchor="middle">대행 · 0.20%</text>
-      <text class="tn" x="617" y="384" text-anchor="middle">2,000원</text>
+      <rect class="bx" x="16" y="330" width="330" height="90" rx="3"/>
+      <text class="ts" x="181" y="356" text-anchor="middle">2차 PG사 · 2.30%</text>
+      <text class="tn" x="181" y="384" text-anchor="middle">23,000원</text>
+      <text class="ts" x="181" y="408" text-anchor="middle">카드사 몫 14,500원 포함</text>
+      <rect class="bxa" x="354" y="330" width="330" height="90" rx="3"/>
+      <text class="ts" x="519" y="356" text-anchor="middle">코드샵 · 0.70%</text>
+      <text class="tna" x="519" y="384" text-anchor="middle">7,000원</text>
+      <text class="ts" x="519" y="408" text-anchor="middle">2차 PG사가 코드샵에 전달</text>
+      <path class="ln" d="M519 420 V438 H434 V450" marker-end="url(#a7)"/>
+      <path class="ln" d="M519 438 H604 V450" marker-end="url(#a7)"/>
+      <rect class="bxa" x="354" y="456" width="160" height="76" rx="3"/>
+      <text class="ts" x="434" y="482" text-anchor="middle">코드샵 · 0.50%</text>
+      <text class="tna" x="434" y="510" text-anchor="middle">5,000원</text>
+      <rect class="bx" x="524" y="456" width="160" height="76" rx="3"/>
+      <text class="ts" x="604" y="482" text-anchor="middle">대행 수수료 · 0.20%</text>
+      <text class="tn" x="604" y="510" text-anchor="middle">2,000원</text>
+      <text class="ts" x="181" y="486" text-anchor="middle">대행 수수료는 2차 PG사를 거치지 않고</text>
+      <text class="ts" x="181" y="506" text-anchor="middle">코드샵과 키스톤파트너스가 정산합니다</text>
     </svg>
   </figure>
   <figure>
-    <figcaption><b>도표 8</b> · 월 정산 명세 표기 예시</figcaption>
+    <figcaption><b>도표 8</b> · 장례식장이 받는 월 정산 명세 예시</figcaption>
     <div class="tablewrap"><table>
       <thead><tr><th>항목</th><th class="num">요율</th><th class="num">금액</th></tr></thead>
       <tbody>
         <tr><td class="key">카드 수수료</td><td class="num">1.45%</td><td class="num">435,000원</td></tr>
-        <tr><td class="key">2차 PG사 수수료</td><td class="num">0.85%</td><td class="num">255,000원</td></tr>
-        <tr><td class="key">솔루션 이용료</td><td class="num">0.50%</td><td class="num">150,000원</td></tr>
-        <tr><td class="key">대행 수수료</td><td class="num">0.20%</td><td class="num">60,000원</td></tr>
+        <tr><td class="key">결제대행 수수료</td><td class="num">0.85%</td><td class="num">255,000원</td></tr>
+        <tr><td class="key">솔루션 이용료</td><td class="num">0.70%</td><td class="num">210,000원</td></tr>
         <tr class="hi"><td class="key">합계</td><td class="num">3.00%</td><td class="num">900,000원</td></tr>
       </tbody>
     </table></div>
-    <p class="note">월 카드 매출 3,000만원 기준. 세금계산서는 결제대행 수수료를 2차 PG사가, 솔루션 이용료를 코드샵이 각각 발행합니다. 결제가 취소되면 코드샵 몫도 함께 환수하는 조건을 계약서에 넣습니다. 장례식장 정산 시점은 2차 PG사가 다른 거래처에 적용하고 있는 결제 3일 뒤 기준입니다.</p>
+    <p class="note">월 카드 매출 3,000만원 기준. 장례식장 명세에는 세 항목만 나타나고, 대행 수수료는 나타나지 않습니다. 세금계산서는 결제대행 수수료를 2차 PG사가, 솔루션 이용료 0.70%를 코드샵이 장례식장에 각각 발행하고, 대행 수수료는 키스톤파트너스가 코드샵에 발행합니다. 결제가 취소되면 코드샵 몫도 함께 환수하는 조건을 계약서에 넣습니다. 장례식장 정산 시점은 2차 PG사가 다른 거래처에 적용하고 있는 결제 3일 뒤 기준입니다.</p>
   </figure>
 </section>
 
