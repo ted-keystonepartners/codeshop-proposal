@@ -1,0 +1,1069 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>업무 방식 개선 제안</title>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+KR:wght@300;400;500;600;700&family=IBM+Plex+Mono:wght@400;500;600&display=swap">
+<style>
+/* 세로형 보고서. 앞서 드린 제안 리포트와 같은 틀(780px 단일 컬럼, 번호 붙은 절과 도표). 흐름도만 넓게 펼친다. */
+:root{
+  --paper:#FAFAFB; --panel:#FFFFFF; --ink:#15181F; --ink-2:#4A5260; --ink-3:#79818F;
+  --rule:#DCDEE4; --rule-2:#EDEEF2; --accent:#1F5C78; --accent-soft:#EAF1F5; --accent-ink:#154558;
+  --on-accent:#FFFFFF; --on-accent-2:#CDE2EC;
+  --red:#A63D2F; --red-soft:#FBEFEC; --red-line:#E3B9B0;
+  --lane:#F4F6F9;
+  --sans:"IBM Plex Sans KR", "Apple SD Gothic Neo", "Malgun Gothic", sans-serif;
+  --mono:"IBM Plex Mono", "IBM Plex Sans KR", monospace;
+  color-scheme:light;
+}
+*{box-sizing:border-box}
+html{-webkit-text-size-adjust:100%}
+html,body{margin:0}
+body{background:var(--paper);color:var(--ink);font-family:var(--sans);font-size:16px;line-height:1.75;-webkit-font-smoothing:antialiased;overflow-x:hidden;word-break:keep-all;overflow-wrap:break-word}
+.wrap{max-width:780px;margin:0 auto;padding-left:max(20px,env(safe-area-inset-left,0px));padding-right:max(20px,env(safe-area-inset-right,0px));padding-block:0 72px}
+p{margin:0}
+h1,h2,h3{margin:0;text-wrap:balance;font-weight:600;letter-spacing:-0.01em}
+b{font-weight:600}
+.red{color:var(--red)}
+
+/* 표지 */
+.cover{padding-block:56px 36px;border-bottom:2px solid var(--ink);display:flex;flex-direction:column;gap:22px}
+.eyebrow{font-family:var(--mono);font-size:12px;font-weight:500;letter-spacing:.18em;color:var(--accent)}
+.cover h1{font-size:clamp(28px,6vw,40px);line-height:1.3;font-weight:700}
+.cover .sub{font-size:16.5px;color:var(--ink-2);line-height:1.7}
+.meta{display:flex;flex-wrap:wrap;gap:6px 26px;font-size:13px;color:var(--ink-3);font-family:var(--mono)}
+
+/* 문제 → 해결 요약 */
+.pf{display:grid;grid-template-columns:minmax(0,1fr) 34px minmax(0,1fr);border:1px solid var(--rule);background:var(--panel)}
+.pf .hd{font-size:12px;font-weight:600;letter-spacing:.06em;color:var(--ink-3);padding:10px 16px;border-bottom:1px solid var(--rule)}
+.pf .hd.next{color:var(--accent)}
+.pf .cell{padding:16px;display:flex;flex-direction:column;gap:4px;min-width:0}
+.pf .cell b{font-size:16px;line-height:1.45}
+.pf .cell>span{font-size:13.5px;color:var(--ink-2);line-height:1.55}
+.pf .cell .num{font-size:11.5px;color:#fff;line-height:1}
+.pf .prob{background:var(--red-soft)}
+.pf .prob b{color:var(--ink)}
+.pf .fix{background:var(--accent-soft)}
+.pf .fix b{color:var(--accent-ink)}
+.pf .arr{display:flex;align-items:center;justify-content:center;color:var(--ink-3);background:var(--panel)}
+.pf .arr svg{width:16px;height:16px}
+.pf .sep{grid-column:1/-1;height:1px;background:var(--rule)}
+.num{display:inline-flex;align-items:center;justify-content:center;width:20px;height:20px;border-radius:50%;font-family:var(--mono);font-size:11.5px;font-weight:600;color:#fff;background:var(--red);margin-right:6px;vertical-align:2px}
+.num.g{background:var(--accent)}
+@media(max-width:600px){
+  .pf{grid-template-columns:1fr}
+  .pf .hd.next,.pf .hd.blank{display:none}
+  .pf .arr{height:26px}
+  .pf .arr svg{transform:rotate(90deg)}
+  .pf .fix::before{content:"이렇게 고칩니다";font-size:11.5px;font-weight:600;letter-spacing:.06em;color:var(--accent);margin-bottom:2px}
+}
+
+/* 절 */
+section.sec{padding-block:44px;border-bottom:1px solid var(--rule);display:flex;flex-direction:column;gap:20px}
+.sechead{display:flex;gap:16px;align-items:baseline}
+.secnum{font-family:var(--mono);font-size:13px;font-weight:600;color:var(--accent);letter-spacing:.06em;flex:none;padding-top:4px}
+.sechead h2{font-size:clamp(21px,4.4vw,26px);line-height:1.35}
+.lead{font-size:16.5px;color:var(--ink);line-height:1.75}
+.lead + .lead{margin-top:-8px}
+
+/* 넓은 표·그림이 세로 칸을 밀어내지 않게 */
+.sec>*,figure>*,.fcol>*,.cover>*{min-width:0}
+
+/* 도표 */
+figure{margin:0;display:flex;flex-direction:column;gap:10px}
+figcaption{font-family:var(--mono);font-size:11.5px;font-weight:500;letter-spacing:.1em;color:var(--ink-3);padding-bottom:7px;border-bottom:1px solid var(--rule)}
+figcaption b{color:var(--accent);font-weight:600}
+.note{font-size:13px;color:var(--ink-3);line-height:1.6}
+.swipe{display:none;font-size:12px;color:var(--ink-3)}
+@media(max-width:700px){.swipe{display:block}}
+
+/* 문제 카드 */
+.probs{display:grid;grid-template-columns:1fr 1fr;gap:14px}
+@media(max-width:680px){.probs{grid-template-columns:1fr}}
+.pc{background:var(--panel);border:1px solid var(--rule);border-top:3px solid var(--red);padding:18px;display:flex;flex-direction:column;gap:14px;min-width:0}
+.pc h3{font-size:17px;line-height:1.45}
+.pc dl{margin:0;display:grid;grid-template-columns:52px minmax(0,1fr);gap:9px 10px;font-size:14px;line-height:1.6}
+.pc dt{font-size:12px;font-weight:600;color:var(--ink-3);padding-top:2px}
+.pc dd{margin:0;color:var(--ink-2)}
+.pc dd b{color:var(--ink)}
+.pc ul{margin:0;padding-left:16px}
+.pc li+li{margin-top:4px}
+.says{display:flex;flex-wrap:wrap;gap:6px}
+.says span{font-size:13px;background:var(--rule-2);border-radius:12px 12px 12px 3px;padding:4px 10px;color:var(--ink-2);white-space:nowrap}
+.pc .cause{background:var(--red-soft);padding:10px 12px;font-size:13.5px;color:var(--ink);line-height:1.6}
+
+/* 흐름도 — 넓게 */
+.wide{width:min(1200px,calc(100vw - 40px));margin-left:50%;transform:translateX(-50%)}
+.legend{display:flex;flex-wrap:wrap;gap:6px 20px;font-size:12.5px;color:var(--ink-2);align-items:center}
+.legend i{display:inline-block;vertical-align:-3px;margin-right:6px}
+.legend .lb{width:16px;height:16px;border-radius:50%}
+.legend .lb.r{background:var(--red)}
+.legend .lb.g{background:var(--accent)}
+.legend .ll{width:26px;height:0;border-top:2px dashed var(--red);vertical-align:3px}
+.legend .ll.g{border-color:var(--accent)}
+.flows{display:grid;grid-template-columns:1fr;gap:26px}
+@media(min-width:1080px){.flows{grid-template-columns:1fr 1fr;gap:22px;align-items:start}}
+.fcol{display:flex;flex-direction:column;gap:8px;min-width:0}
+.fhead{display:flex;gap:10px;align-items:baseline;font-size:14.5px;font-weight:600;line-height:1.5}
+.tag{flex:none;font-size:12px;font-weight:600;padding:2px 10px;border-radius:3px}
+.tag.bad{background:var(--red);color:#fff}
+.tag.good{background:var(--accent);color:#fff}
+.scroll{overflow-x:auto;-webkit-overflow-scrolling:touch;background:var(--panel);border:1px solid var(--rule)}
+.flowsvg{display:block;width:100%;min-width:540px;max-width:620px;height:auto;margin:0 auto;font-family:var(--sans)}
+.flowsvg.mob{display:none}
+@media(max-width:600px){
+  .flowsvg.dsk{display:none}
+  .flowsvg.mob{display:block;min-width:0;max-width:none}
+  .flowsvg.mob .tt,.flowsvg.mob .tt-w{font-size:13px}
+  .flowsvg.mob .ts,.flowsvg.mob .ts-r,.flowsvg.mob .ts-w{font-size:11px}
+  .flowsvg.mob .lane-t{font-size:12px}
+  .flowsvg.mob .lb-n,.flowsvg.mob .lb-bad,.flowsvg.mob .lb-good{font-size:10.5px}
+  .flowsvg.mob .bdg-t{font-size:10.5px}
+  .fig-swipe{display:none}
+}
+.flowsvg .lane-d{fill:var(--lane)}
+.flowsvg .lane-div{stroke:var(--rule);stroke-width:1;stroke-dasharray:4 4}
+.flowsvg .lane-div2{stroke:var(--rule);stroke-width:1}
+.flowsvg .lane-t{font-size:13px;font-weight:600;fill:var(--ink-3);letter-spacing:.08em}
+.flowsvg .b-n{fill:var(--panel);stroke:#B9BEC8;stroke-width:1}
+.flowsvg .b-muted{fill:var(--rule-2);stroke:var(--rule);stroke-width:1}
+.flowsvg .b-bad{fill:var(--red-soft);stroke:var(--red);stroke-width:1.5}
+.flowsvg .b-good{fill:var(--accent-soft);stroke:var(--accent);stroke-width:1.5}
+.flowsvg .b-mile{fill:var(--accent);stroke:none}
+.flowsvg .b-badend{fill:var(--red);stroke:none}
+.flowsvg .d-n{fill:var(--panel);stroke:#9AA1AD;stroke-width:1.2}
+.flowsvg .d-good{fill:var(--accent-soft);stroke:var(--accent);stroke-width:1.5}
+.flowsvg .tt{font-size:14.5px;font-weight:600;fill:var(--ink)}
+.flowsvg .tt-w{font-size:14.5px;font-weight:600;fill:#fff}
+.flowsvg .ts{font-size:12.5px;fill:var(--ink-2)}
+.flowsvg .ts-r{font-size:12.5px;fill:var(--red)}
+.flowsvg .ts-w{font-size:12.5px;fill:var(--on-accent-2)}
+.flowsvg .c-n{stroke:#8A919D;stroke-width:1.4;fill:none}
+.flowsvg .c-bad{stroke:var(--red);stroke-width:1.6;fill:none}
+.flowsvg .c-good{stroke:var(--accent);stroke-width:1.6;fill:none}
+.flowsvg .c-bad-loop{stroke:var(--red);stroke-width:1.8;fill:none;stroke-dasharray:6 4}
+.flowsvg .c-good-loop{stroke:var(--accent);stroke-width:1.6;fill:none;stroke-dasharray:6 4}
+.flowsvg .m-n{fill:#8A919D}
+.flowsvg .m-bad,.flowsvg .m-bad-loop{fill:var(--red)}
+.flowsvg .m-good,.flowsvg .m-good-loop{fill:var(--accent)}
+.flowsvg .lb-n{font-size:12px;font-weight:600;fill:var(--ink-3)}
+.flowsvg .lb-bad{font-size:12px;font-weight:600;fill:var(--red)}
+.flowsvg .lb-good{font-size:12px;font-weight:600;fill:var(--accent)}
+.flowsvg .bdg-bad{fill:var(--red)}
+.flowsvg .bdg-good{fill:var(--accent)}
+.flowsvg .bdg-t{font-family:var(--mono);font-size:12px;font-weight:600;fill:#fff}
+.readout{display:grid;grid-template-columns:1fr 1fr;gap:1px;background:var(--rule);border:1px solid var(--rule)}
+.readout div{background:var(--panel);padding:14px 16px;font-size:14px;color:var(--ink-2);line-height:1.6}
+.readout div b{display:block;font-size:14.5px;color:var(--ink);margin-bottom:3px}
+.readout .r b{color:var(--red)}
+.readout .g b{color:var(--accent-ink)}
+@media(max-width:600px){.readout{grid-template-columns:1fr}}
+
+/* 와이어프레임 */
+.facts{display:grid;grid-template-columns:repeat(3,1fr);gap:1px;background:var(--rule);border:1px solid var(--rule)}
+.facts div{background:var(--panel);padding:14px 16px;display:flex;flex-direction:column;gap:3px;min-width:0}
+.facts b{font-size:15px;color:var(--accent-ink)}
+.facts span{font-size:13px;color:var(--ink-2);line-height:1.5}
+@media(max-width:560px){.facts{grid-template-columns:1fr}}
+.ask{background:var(--panel);border:1px solid var(--rule);border-left:3px solid var(--ink-3);padding:12px 16px;font-size:14.5px}
+.ask em{font-style:normal;font-size:12px;font-weight:600;color:var(--ink-3);display:block;margin-bottom:2px}
+.interp{display:grid;grid-template-columns:repeat(3,1fr);gap:12px}
+@media(max-width:600px){.interp{grid-template-columns:1fr}}
+.ip{background:var(--panel);border:1px solid var(--rule);padding:12px;display:flex;flex-direction:column;gap:10px;min-width:0}
+.ip .k{font-size:12px;font-weight:600;color:var(--ink-3)}
+.ip .cap{font-size:13.5px;line-height:1.5;color:var(--ink)}
+.mini{border:1px dashed #B9BEC8;background:#FCFCFD;padding:8px;display:flex;flex-direction:column;gap:5px;height:118px}
+.mini .bar{height:7px;background:var(--rule);border-radius:2px}
+.mini .bar.s{width:55%}
+.mini .row{display:flex;gap:5px}
+.mini .row .bar{flex:1}
+.mini .hl{border:1.5px solid var(--accent);background:var(--accent-soft);padding:4px 6px;font-size:10.5px;color:var(--accent-ink);font-weight:600;line-height:1.3}
+.mini .hl.thin{padding:3px 6px}
+.mini .indent{margin-left:12px;display:flex;flex-direction:column;gap:4px;border-left:2px solid var(--accent);padding-left:6px}
+.mini .indent .bar{background:var(--on-accent-2)}
+.mini .sp{flex:1}
+
+.wfbox{display:grid;grid-template-columns:minmax(0,1.45fr) minmax(0,1fr);gap:16px;align-items:start}
+@media(max-width:700px){.wfbox{grid-template-columns:1fr}}
+.wf{background:#FCFCFD;border:1.5px dashed #AEB4BF;padding:14px;display:flex;flex-direction:column;gap:12px;font-size:12.5px;color:var(--ink-2)}
+.wf .top{display:flex;justify-content:space-between;align-items:center;gap:8px;border-bottom:1px solid var(--rule);padding-bottom:10px;flex-wrap:wrap}
+.wf .top b{font-size:14px;color:var(--ink)}
+.wf .mon{font-family:var(--mono);font-size:12px;border:1px solid var(--rule);padding:2px 8px;background:var(--panel);white-space:nowrap}
+.wf .btn{font-size:11.5px;border:1px solid #AEB4BF;padding:2px 10px;background:var(--panel)}
+.wf .cards{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:8px}
+@media(max-width:480px){.wf .cards{grid-template-columns:repeat(2,minmax(0,1fr))}}
+.wf .c{border:1px solid var(--rule);background:var(--panel);padding:8px;display:flex;flex-direction:column;gap:5px;position:relative;min-width:0}
+.wf .c .l{font-size:11.5px;line-height:1.35;color:var(--ink-2)}
+.wf .c .v{font-family:var(--mono);font-size:12.5px;color:var(--ink);font-weight:600}
+.wf .c.hl{border:1.5px solid var(--accent);background:var(--accent-soft)}
+.wf .c .hint{font-size:10.5px;color:var(--accent-ink)}
+.wf .blk{border:1px solid var(--rule);background:var(--panel)}
+.wf .blk.hl{border:1.5px solid var(--accent)}
+.wf .bh{padding:7px 10px;font-size:12px;font-weight:600;color:var(--ink);border-bottom:1px solid var(--rule-2);display:flex;justify-content:space-between;align-items:center;gap:8px}
+.wf .blk.hl .bh{background:var(--accent-soft);color:var(--accent-ink)}
+.wf .tr{display:grid;grid-template-columns:52px 1fr 76px;gap:8px;padding:6px 10px;border-bottom:1px solid var(--rule-2);align-items:center}
+.wf .tr:last-child{border-bottom:none}
+.wf .tr .bar{height:7px;background:var(--rule);border-radius:2px}
+.wf .tr.th{font-size:11px;color:var(--ink-3)}
+.wf .tr.sum{font-weight:600;color:var(--ink);font-size:12px}
+.wf .tr.sum .v{font-family:var(--mono);text-align:right}
+.wf .mk{display:inline-flex;align-items:center;justify-content:center;width:18px;height:18px;border-radius:50%;background:var(--accent);color:#fff;font-family:var(--mono);font-size:11px;font-weight:600;flex:none}
+.wf .c .mk{position:absolute;top:-8px;right:-8px}
+.checks{display:flex;flex-direction:column;gap:10px}
+.checks .t{font-size:12px;font-weight:600;color:var(--ink-3);letter-spacing:.06em}
+.chk{display:grid;grid-template-columns:22px minmax(0,1fr);gap:10px;background:var(--panel);border:1px solid var(--rule);padding:12px;font-size:14px;line-height:1.55}
+.chk .mk{display:inline-flex;align-items:center;justify-content:center;width:20px;height:20px;border-radius:50%;background:var(--accent);color:#fff;font-family:var(--mono);font-size:11.5px;font-weight:600;margin-top:1px}
+.chk .opt{display:block;font-size:12.5px;color:var(--ink-3);margin-top:3px}
+
+/* WBS */
+.talk{display:grid;grid-template-columns:1fr 1fr;gap:14px}
+@media(max-width:640px){.talk{grid-template-columns:1fr}}
+.tk{border:1px solid var(--rule);background:var(--panel);display:flex;flex-direction:column}
+.tk .h{font-size:12.5px;font-weight:600;padding:9px 14px;border-bottom:1px solid var(--rule)}
+.tk.now .h{color:var(--red);background:var(--red-soft)}
+.tk.next .h{color:var(--accent-ink);background:var(--accent-soft)}
+.tk .bd{padding:14px;font-size:14.5px;line-height:1.7;color:var(--ink-2);display:flex;flex-direction:column;gap:8px}
+.tk .bubble{background:var(--rule-2);padding:10px 12px;border-radius:12px 12px 12px 3px;color:var(--ink)}
+.tk ul{margin:0;padding-left:18px;color:var(--ink)}
+.tk ul li+li{margin-top:6px}
+.tk .miss{font-size:12.5px;color:var(--red)}
+.kpis{display:grid;grid-template-columns:repeat(4,1fr);gap:1px;background:var(--rule);border:1px solid var(--rule)}
+.kpi{background:var(--panel);padding:14px 16px;display:flex;flex-direction:column;gap:3px;min-width:0}
+.kpi b{font-family:var(--mono);font-size:clamp(20px,4.6vw,26px);font-weight:600;color:var(--accent);line-height:1.15}
+.kpi b small{font-size:13px;color:var(--ink-3);font-weight:500}
+.kpi>span{font-size:12.5px;color:var(--ink-2);line-height:1.45}
+.kpi.r b{color:var(--red)}
+@media(max-width:560px){.kpis{grid-template-columns:1fr 1fr}}
+.tablewrap{overflow-x:auto;-webkit-overflow-scrolling:touch}
+table{border-collapse:collapse;width:100%;font-size:13.5px}
+th,td{padding:9px 9px;text-align:left;border-bottom:1px solid var(--rule-2);vertical-align:top;line-height:1.5}
+thead th{font-size:12px;font-weight:600;color:var(--ink-3);letter-spacing:.04em;border-bottom:1px solid var(--rule);white-space:nowrap;background:var(--paper)}
+.wbs{min-width:700px;background:var(--panel)}
+.wbs td{white-space:nowrap}
+.wbs td:nth-child(2){white-space:normal;min-width:210px}
+.wbs .mono{font-family:var(--mono);font-size:12.5px;font-variant-numeric:tabular-nums}
+.wbs .r{text-align:right}
+.wbs tr.grp td{background:var(--accent-soft);font-weight:600;color:var(--accent-ink);font-size:13.5px;border-bottom:1px solid #D2E2EA}
+.wbs tr.grp .prog-cnt{font-family:var(--mono);font-size:12px;font-weight:500;text-align:right}
+.wbs tr.late td{background:var(--red-soft)}
+.wbs s{color:var(--ink-3)}
+.wbs .why{display:block;font-size:12px;color:var(--red);margin-top:2px}
+.cat{display:inline-block;font-size:12px;border:1px solid var(--rule);padding:0 7px;border-radius:3px;color:var(--ink-2);background:var(--panel)}
+.st{display:inline-block;font-size:12px;font-weight:600;padding:1px 8px;border-radius:10px}
+.st-done{background:var(--accent);color:#fff}
+.st-prog{background:var(--accent-soft);color:var(--accent-ink);border:1px solid var(--accent)}
+.st-wait{background:var(--rule-2);color:var(--ink-3)}
+.st-late{background:var(--red);color:#fff}
+.ganttsvg{display:block;width:100%;min-width:660px;height:auto;font-family:var(--sans);background:var(--panel)}
+.ganttsvg .g-mon{font-family:var(--mono);font-size:11.5px;font-weight:600;fill:var(--ink-3)}
+.ganttsvg .g-day{font-family:var(--mono);font-size:11px;fill:var(--ink-3)}
+.ganttsvg .g-wk{stroke:var(--rule);stroke-width:1}
+.ganttsvg .g-dl{stroke:var(--rule-2);stroke-width:1}
+.ganttsvg .g-hl{stroke:var(--rule);stroke-width:1}
+.ganttsvg .g-grp{font-size:12.5px;font-weight:600;fill:var(--accent-ink)}
+.ganttsvg .g-lab{font-size:12px;fill:var(--ink-2)}
+.ganttsvg .g-no{font-family:var(--mono);font-size:11px;fill:var(--ink-3)}
+.ganttsvg .g-sum{fill:var(--accent-ink);opacity:.35}
+.ganttsvg .g-done{fill:var(--accent)}
+.ganttsvg .g-prog{fill:var(--accent-soft);stroke:var(--accent);stroke-width:1.2}
+.ganttsvg .g-wait{fill:#D6DAE1}
+.ganttsvg .g-late{fill:var(--red)}
+.ganttsvg .g-latet{font-family:var(--mono);font-size:11px;font-weight:600;fill:var(--red)}
+.ganttsvg .g-ghost{fill:none;stroke:var(--ink-3);stroke-width:1;stroke-dasharray:3 3}
+.ganttsvg .g-today{stroke:var(--ink);stroke-width:1.4;stroke-dasharray:4 3}
+.ganttsvg .g-todayb{fill:var(--ink)}
+.ganttsvg .g-todayt{font-size:11.5px;font-weight:600;fill:#fff}
+.ganttsvg.mob{display:none}
+@media(max-width:600px){
+  .ganttsvg.dsk{display:none}
+  .ganttsvg.mob{display:block;min-width:0}
+  .ganttsvg.mob .g-lab{font-size:10.5px}
+  .ganttsvg.mob .g-no{font-size:9.5px}
+  .ganttsvg.mob .g-grp{font-size:11px}
+  .ganttsvg.mob .g-day{font-size:8.5px}
+  .ganttsvg.mob .g-mon{font-size:10px}
+  .ganttsvg.mob .g-latet{font-size:10px}
+  .ganttsvg.mob .g-todayt{font-size:10.5px}
+  /* 작업표: 한 작업을 두 줄로 */
+  .wbs{min-width:0}
+  .wbs thead{display:none}
+  .wbs tbody{display:block}
+  .wbs tr{display:flex;flex-wrap:wrap;align-items:center;gap:4px 8px;padding:9px 4px;border-bottom:1px solid var(--rule-2)}
+  .wbs td{display:block;border:0;padding:0;white-space:nowrap}
+  .wbs td.no{width:28px}
+  .wbs td.nm{flex:1 1 calc(100% - 40px);min-width:0;white-space:normal;font-weight:500;color:var(--ink)}
+  .wbs td.ct{margin-left:36px}
+  .wbs td.who,.wbs td.dd,.wbs td.sc{font-size:12.5px;color:var(--ink-2)}
+  .wbs td.dd::after{content:" ·"}
+  .wbs td:last-child{margin-left:auto}
+  .wbs tr.grp{padding:9px 4px;background:var(--accent-soft)}
+  .wbs tr.grp td{background:none;border:0}
+  .wbs tr.grp td.nm{flex:1 1 auto}
+  .wbs tr.late{background:var(--red-soft)}
+  .wbs tr.late td{background:none}
+  .wbs+.swipe,.tablewrap:has(.wbs)+.swipe{display:none}
+  /* 비교표: 항목마다 한 덩어리 */
+  .cmp{min-width:0}
+  .cmp thead{display:none}
+  .cmp tbody,.cmp tr,.cmp td{display:block}
+  .cmp tr{padding:12px 0;border-bottom:1px solid var(--rule)}
+  .cmp td{border:0;padding:2px 0 2px 64px;position:relative;white-space:normal}
+  .cmp td.key{padding-left:0;font-size:15px;margin-bottom:4px}
+  .cmp td[data-l]::before{content:attr(data-l);position:absolute;left:0;top:3px;font-size:11.5px;font-weight:600;color:var(--ink-3)}
+  .cmp td.next[data-l]::before{color:var(--accent)}
+  .mini{height:92px}
+}
+.nw{white-space:nowrap}
+.glegend{display:flex;flex-wrap:wrap;gap:6px 18px;font-size:12.5px;color:var(--ink-2)}
+.glegend i{display:inline-block;width:18px;height:10px;border-radius:2px;margin-right:6px;vertical-align:0}
+.glegend .a{background:var(--accent)}
+.glegend .b{background:var(--accent-soft);border:1px solid var(--accent)}
+.glegend .c{background:#D6DAE1}
+.glegend .d{background:var(--red)}
+.glegend .e{border:1px dashed var(--ink-3)}
+ol.steps{margin:0;padding-left:0;list-style:none;counter-reset:s;display:flex;flex-direction:column;gap:10px}
+ol.steps li{counter-increment:s;display:grid;grid-template-columns:26px minmax(0,1fr);gap:10px;font-size:15px;color:var(--ink-2);line-height:1.7}
+ol.steps li::before{content:counter(s);font-family:var(--mono);font-size:12.5px;font-weight:600;color:var(--accent);padding-top:4px}
+ol.steps b{color:var(--ink)}
+
+/* 비교표 */
+.cmp{min-width:560px;background:var(--panel);font-size:14px}
+.cmp td.key{font-weight:600;color:var(--ink);white-space:nowrap}
+.cmp td.now{color:var(--ink-2)}
+.cmp td.next{color:var(--accent-ink);font-weight:500}
+.cmp td.why{color:var(--ink-2)}
+
+.close{padding-block:40px;display:flex;flex-direction:column;gap:16px}
+.close h2{font-size:21px}
+.close p{font-size:15.5px;color:var(--ink-2);line-height:1.8}
+footer{padding-block:24px;border-top:1px solid var(--rule);font-family:var(--mono);font-size:11.5px;color:var(--ink-3);letter-spacing:.06em}
+@media(max-width:560px){.cover{padding-block:40px 30px}section.sec{padding-block:36px}}
+</style>
+</head>
+<body>
+<div class="wrap">
+
+<header class="cover">
+  <p class="eyebrow">업무 방식 개선 제안</p>
+  <h1>요청한 대로 만들어지고,<br>진척이 보이게</h1>
+  <p class="sub">지금 개발 과정에서 두 가지가 막혀 있습니다. 둘 다 사람이 아니라 일하는 순서의 문제라, 순서를 바꾸면 풀립니다.</p>
+  <div class="pf" role="table" aria-label="지금 보이는 문제와 고치는 방법">
+    <div class="hd">지금 보이는 문제</div><div class="hd blank"></div><div class="hd next">이렇게 고칩니다</div>
+    <div class="cell prob"><b><span class="num">1</span>요청한 대로 만들어지지 않습니다</b><span>요청과 다른 것이 주간 리뷰에서야, 다 만든 뒤에 드러납니다.</span></div>
+    <div class="arr" aria-hidden="true"><svg viewBox="0 0 16 16"><path d="M2 8h11M9 4l4 4-4 4" fill="none" stroke="currentColor" stroke-width="1.6"/></svg></div>
+    <div class="cell fix"><b>요구사항을 글로 정하고, 와이어프레임으로 먼저 확인받은 뒤 개발합니다</b><span>어긋남을 개발 전, 그림 단계에서 걸러냅니다.</span></div>
+    <div class="sep"></div>
+    <div class="cell prob"><b><span class="num">2</span>진척이 보이지 않습니다</b><span>“금방 됩니다”, “이래서 못 했습니다”로만 오가고, 한 과제에 묶이면 나머지가 멈춥니다.</span></div>
+    <div class="arr" aria-hidden="true"><svg viewBox="0 0 16 16"><path d="M2 8h11M9 4l4 4-4 4" fill="none" stroke="currentColor" stroke-width="1.6"/></svg></div>
+    <div class="cell fix"><b>과제를 <span class="nw">프론트·백엔드·서버·API 연동</span> 작업으로 나눠 WBS로 관리합니다</b><span>진척을 “몇 개 중 몇 개 끝, 며칠 남음”으로 봅니다.</span></div>
+  </div>
+  <div class="meta"><span>코드샵 대표님께</span><span>2026년 11월</span><span>작성 · 키스톤파트너스</span></div>
+</header>
+
+<section class="sec">
+  <div class="sechead"><span class="secnum">01</span><h2>지금 보이는 문제</h2></div>
+  <div class="probs">
+    <div class="pc">
+      <h3><span class="num">1</span>요청한 대로 만들어지지 않습니다</h3>
+      <dl>
+        <dt>사례</dt>
+        <dd><ul>
+          <li><b>정산 화면</b> — 지난달 이익금을 이월해 자세히 보여 주는 부분</li>
+          <li><b>일일업무보고</b> — 전달사항 내용이 분리되는 문제</li>
+        </ul></dd>
+        <dt>드러난 때</dt>
+        <dd>주간 리뷰. 이미 다 만든 뒤였습니다.</dd>
+      </dl>
+      <div class="cause"><b>원인</b> · 요구사항을 글로 정하지 않은 채 개발에 들어가고, 웹 화면인데도 와이어프레임으로 먼저 확인받는 단계가 빠져 있습니다.</div>
+    </div>
+    <div class="pc">
+      <h3><span class="num">2</span>진척이 보이지 않습니다</h3>
+      <dl>
+        <dt>사례</dt>
+        <dd>“문자 보내는 기능 개발하느라 다른 일정을 못 했다”가 반복됩니다.</dd>
+        <dt>오가는 말</dt>
+        <dd class="says"><span>“속도 내겠습니다”</span><span>“이래서 못 했습니다”</span><span>“다 됐습니다”</span><span>“금방 하겠습니다”</span></dd>
+      </dl>
+      <div class="cause"><b>원인</b> · 과제를 통째로 한 덩어리로 다뤄, 무엇이 끝났고 무엇이 남았는지 셀 단위가 없습니다. 그러니 말로 답할 수밖에 없습니다.</div>
+    </div>
+  </div>
+</section>
+
+<section class="sec">
+  <div class="sechead"><span class="secnum">02</span><h2>지금 흐름과 개선 흐름</h2></div>
+  <p class="lead">같은 요청 하나가 어떻게 흘러가는지 나란히 놓았습니다. 왼쪽 줄은 대표님, 오른쪽 줄은 개발팀이 하는 일입니다.</p>
+  <figure class="wide">
+    <figcaption><b>도표 1</b> · 요청에서 반영까지</figcaption>
+    <div class="legend">
+      <span><i class="lb r"></i>문제가 생기는 곳 (번호는 위 문제 ①②)</span>
+      <span><i class="lb g"></i>그 문제가 걸러지는 곳</span>
+      <span><i class="ll"></i><i class="ll g"></i>되돌아가는 고리</span>
+    </div>
+    <div class="flows">
+      <div class="fcol">
+        <div class="fhead"><span class="tag bad">지금</span><span>말로 요청하고, 다 만든 뒤에 처음 봅니다</span></div>
+        <div class="scroll"><svg class="flowsvg dsk" viewBox="0 0 560 784" role="img" aria-label="지금 흐름. 대표가 말로 요청하면 개발팀이 요구사항 정의 없이 해석해 바로 개발하고, 한 과제에 묶여 다른 과제가 기다리며, 진척을 물으면 금방 된다는 답이 돌아온다. 주간 리뷰에서 처음 화면을 보고 요청과 다르면 처음부터 다시 개발하게 되어 일정이 밀린다."><defs><marker id="fndsk-n" viewBox="0 0 10 10" refX="8.5" refY="5" markerWidth="7" markerHeight="7" orient="auto"><path d="M0 1 L9 5 L0 9 z" class="m-n"/></marker><marker id="fndsk-bad" viewBox="0 0 10 10" refX="8.5" refY="5" markerWidth="7" markerHeight="7" orient="auto"><path d="M0 1 L9 5 L0 9 z" class="m-bad"/></marker><marker id="fndsk-good" viewBox="0 0 10 10" refX="8.5" refY="5" markerWidth="7" markerHeight="7" orient="auto"><path d="M0 1 L9 5 L0 9 z" class="m-good"/></marker><marker id="fndsk-bad-loop" viewBox="0 0 10 10" refX="8.5" refY="5" markerWidth="7" markerHeight="7" orient="auto"><path d="M0 1 L9 5 L0 9 z" class="m-bad-loop"/></marker><marker id="fndsk-good-loop" viewBox="0 0 10 10" refX="8.5" refY="5" markerWidth="7" markerHeight="7" orient="auto"><path d="M0 1 L9 5 L0 9 z" class="m-good-loop"/></marker></defs>
+<rect x="0" y="0" width="267" height="784" class="lane-d"/>
+<line x1="267" y1="0" x2="267" y2="784" class="lane-div"/>
+<text class="lane-t" x="135" y="27" text-anchor="middle">대표</text>
+<text class="lane-t" x="400" y="27" text-anchor="middle">개발팀</text>
+<line x1="8" y1="38" x2="552" y2="38" class="lane-div2"/>
+<rect x="25.0" y="56" width="220" height="58" rx="4" class="b-n"/>
+<text x="135" y="81" text-anchor="middle" class="tt">말로 요청</text>
+<text x="135" y="100" text-anchor="middle" class="ts">회의·전화·메신저로 전달</text>
+<rect x="290.0" y="148" width="220" height="58" rx="4" class="b-bad"/>
+<text x="400" y="173" text-anchor="middle" class="tt">해석해서 바로 개발</text>
+<text x="400" y="192" text-anchor="middle" class="ts-r">요구사항 정의 없이 시작</text>
+<circle cx="290.0" cy="148" r="11" class="bdg-bad"/><text x="290.0" y="152.4" text-anchor="middle" class="bdg-t">1</text>
+<rect x="290.0" y="240" width="220" height="58" rx="4" class="b-bad"/>
+<text x="400" y="265" text-anchor="middle" class="tt">한 과제에 묶임</text>
+<text x="400" y="284" text-anchor="middle" class="ts-r">문자 기능에 묶여 나머지 대기</text>
+<circle cx="290.0" cy="240" r="11" class="bdg-bad"/><text x="290.0" y="244.4" text-anchor="middle" class="bdg-t">2</text>
+<rect x="25.0" y="332" width="220" height="58" rx="4" class="b-n"/>
+<text x="135" y="357" text-anchor="middle" class="tt">진척 문의</text>
+<text x="135" y="376" text-anchor="middle" class="ts">“언제 되나요?”</text>
+<rect x="290.0" y="424" width="220" height="58" rx="4" class="b-bad"/>
+<text x="400" y="449" text-anchor="middle" class="tt">“금방 됩니다”</text>
+<text x="400" y="468" text-anchor="middle" class="ts-r">남은 작업과 날짜가 안 보임</text>
+<circle cx="290.0" cy="424" r="11" class="bdg-bad"/><text x="290.0" y="428.4" text-anchor="middle" class="bdg-t">2</text>
+<rect x="25.0" y="516" width="220" height="58" rx="4" class="b-n"/>
+<text x="135" y="541" text-anchor="middle" class="tt">주간 리뷰에서 첫 확인</text>
+<text x="135" y="560" text-anchor="middle" class="ts">다 만든 뒤에 화면을 처음 봄</text>
+<polygon points="135,608.0 245,642.0 135,676.0 25,642.0" class="d-n"/>
+<text x="135" y="647.0" text-anchor="middle" class="tt">요청과 같은가?</text>
+<rect x="290.0" y="613.0" width="220" height="58" rx="4" class="b-bad"/>
+<text x="400" y="638.0" text-anchor="middle" class="tt">다름 발견 → 다시 개발</text>
+<text x="400" y="657.0" text-anchor="middle" class="ts-r">만든 것을 고쳐 다시 만듦</text>
+<circle cx="290.0" cy="613.0" r="11" class="bdg-bad"/><text x="290.0" y="617.4" text-anchor="middle" class="bdg-t">1</text>
+<rect x="74.5" y="710" width="121.00000000000001" height="40" rx="4" class="b-muted"/>
+<text x="135" y="735.0" text-anchor="middle" class="tt">반영</text>
+<rect x="290.0" y="710" width="220" height="58" rx="4" class="b-badend"/>
+<text x="400" y="735" text-anchor="middle" class="tt-w">일정 밀림</text>
+<text x="400" y="754" text-anchor="middle" class="ts-w">기다리던 다른 과제도 함께</text>
+<path d="M135 114 V131.0 H400 V147" class="c-n" marker-end="url(#fndsk-n)"/>
+<path d="M400 206 V239" class="c-n" marker-end="url(#fndsk-n)"/>
+<path d="M400 298 V315.0 H135 V331" class="c-n" marker-end="url(#fndsk-n)"/>
+<path d="M135 390 V407.0 H400 V423" class="c-n" marker-end="url(#fndsk-n)"/>
+<path d="M400 482 V499.0 H135 V515" class="c-n" marker-end="url(#fndsk-n)"/>
+<path d="M135 574 V607.0" class="c-n" marker-end="url(#fndsk-n)"/>
+<path d="M245 642.0 H289.0" class="c-bad" marker-end="url(#fndsk-bad)"/>
+<text x="287.0" y="635.0" text-anchor="end" class="lb-bad">아니오</text>
+<path d="M135 676.0 V709" class="c-n" marker-end="url(#fndsk-n)"/>
+<text x="143" y="690.0" text-anchor="start" class="lb-n">예</text>
+<path d="M400 671.0 V709" class="c-bad" marker-end="url(#fndsk-bad)"/>
+<path d="M510.0 642.0 H528 V177.0 H511.0" class="c-bad-loop" marker-end="url(#fndsk-bad-loop)"/>
+<text x="547" y="409.5" text-anchor="middle" class="lb-bad" transform="rotate(-90 547 409.5)">처음부터 되돌아감</text>
+</svg><svg class="flowsvg mob" viewBox="0 0 340 728" role="img" aria-label="지금 흐름. 대표가 말로 요청하면 개발팀이 요구사항 정의 없이 해석해 바로 개발하고, 한 과제에 묶여 다른 과제가 기다리며, 진척을 물으면 금방 된다는 답이 돌아온다. 주간 리뷰에서 처음 화면을 보고 요청과 다르면 처음부터 다시 개발하게 되어 일정이 밀린다."><defs><marker id="fnmob-n" viewBox="0 0 10 10" refX="8.5" refY="5" markerWidth="7" markerHeight="7" orient="auto"><path d="M0 1 L9 5 L0 9 z" class="m-n"/></marker><marker id="fnmob-bad" viewBox="0 0 10 10" refX="8.5" refY="5" markerWidth="7" markerHeight="7" orient="auto"><path d="M0 1 L9 5 L0 9 z" class="m-bad"/></marker><marker id="fnmob-good" viewBox="0 0 10 10" refX="8.5" refY="5" markerWidth="7" markerHeight="7" orient="auto"><path d="M0 1 L9 5 L0 9 z" class="m-good"/></marker><marker id="fnmob-bad-loop" viewBox="0 0 10 10" refX="8.5" refY="5" markerWidth="7" markerHeight="7" orient="auto"><path d="M0 1 L9 5 L0 9 z" class="m-bad-loop"/></marker><marker id="fnmob-good-loop" viewBox="0 0 10 10" refX="8.5" refY="5" markerWidth="7" markerHeight="7" orient="auto"><path d="M0 1 L9 5 L0 9 z" class="m-good-loop"/></marker></defs>
+<rect x="0" y="0" width="162.5" height="728" class="lane-d"/>
+<line x1="162.5" y1="0" x2="162.5" y2="728" class="lane-div"/>
+<text class="lane-t" x="82" y="22" text-anchor="middle">대표</text>
+<text class="lane-t" x="243" y="22" text-anchor="middle">개발팀</text>
+<line x1="8" y1="32" x2="332" y2="32" class="lane-div2"/>
+<rect x="9.0" y="46" width="146" height="50" rx="4" class="b-n"/>
+<text x="82" y="66" text-anchor="middle" class="tt">말로 요청</text>
+<text x="82" y="83" text-anchor="middle" class="ts">회의·전화·메신저로 전달</text>
+<rect x="170.0" y="126" width="146" height="50" rx="4" class="b-bad"/>
+<text x="243" y="146" text-anchor="middle" class="tt">해석해서 바로 개발</text>
+<text x="243" y="163" text-anchor="middle" class="ts-r">요구사항 정의 없이 시작</text>
+<circle cx="170.0" cy="126" r="9" class="bdg-bad"/><text x="170.0" y="129.6" text-anchor="middle" class="bdg-t">1</text>
+<rect x="170.0" y="206" width="146" height="64" rx="4" class="b-bad"/>
+<text x="243" y="226" text-anchor="middle" class="tt">한 과제에 묶임</text>
+<text x="243" y="243" text-anchor="middle" class="ts-r">문자 기능에 묶여</text>
+<text x="243" y="257" text-anchor="middle" class="ts-r">나머지는 대기</text>
+<circle cx="170.0" cy="206" r="9" class="bdg-bad"/><text x="170.0" y="209.6" text-anchor="middle" class="bdg-t">2</text>
+<rect x="9.0" y="300" width="146" height="50" rx="4" class="b-n"/>
+<text x="82" y="320" text-anchor="middle" class="tt">진척 문의</text>
+<text x="82" y="337" text-anchor="middle" class="ts">“언제 되나요?”</text>
+<rect x="170.0" y="380" width="146" height="64" rx="4" class="b-bad"/>
+<text x="243" y="400" text-anchor="middle" class="tt">“금방 됩니다”</text>
+<text x="243" y="417" text-anchor="middle" class="ts-r">남은 작업과 날짜가</text>
+<text x="243" y="431" text-anchor="middle" class="ts-r">보이지 않음</text>
+<circle cx="170.0" cy="380" r="9" class="bdg-bad"/><text x="170.0" y="383.6" text-anchor="middle" class="bdg-t">2</text>
+<rect x="9.0" y="474" width="146" height="64" rx="4" class="b-n"/>
+<text x="82" y="494" text-anchor="middle" class="tt">주간 리뷰에서 첫 확인</text>
+<text x="82" y="511" text-anchor="middle" class="ts">다 만든 뒤에</text>
+<text x="82" y="525" text-anchor="middle" class="ts">화면을 처음 봄</text>
+<polygon points="82,570.0 150,600.0 82,630.0 14,600.0" class="d-n"/>
+<text x="82" y="605.0" text-anchor="middle" class="tt">요청과 같은가?</text>
+<rect x="170.0" y="568.0" width="146" height="64" rx="4" class="b-bad"/>
+<text x="243" y="588.0" text-anchor="middle" class="tt">다시 개발</text>
+<text x="243" y="605.0" text-anchor="middle" class="ts-r">요청과 다름 발견</text>
+<text x="243" y="619.0" text-anchor="middle" class="ts-r">고쳐서 다시 만듦</text>
+<circle cx="170.0" cy="568.0" r="9" class="bdg-bad"/><text x="170.0" y="571.6" text-anchor="middle" class="bdg-t">1</text>
+<rect x="41.849999999999994" y="662" width="80.30000000000001" height="36" rx="4" class="b-muted"/>
+<text x="82" y="685.0" text-anchor="middle" class="tt">반영</text>
+<rect x="170.0" y="662" width="146" height="50" rx="4" class="b-badend"/>
+<text x="243" y="682" text-anchor="middle" class="tt-w">일정 밀림</text>
+<text x="243" y="699" text-anchor="middle" class="ts-w">다른 과제도 함께</text>
+<path d="M82 96 V111.0 H243 V125" class="c-n" marker-end="url(#fnmob-n)"/>
+<path d="M243 176 V205" class="c-n" marker-end="url(#fnmob-n)"/>
+<path d="M243 270 V285.0 H82 V299" class="c-n" marker-end="url(#fnmob-n)"/>
+<path d="M82 350 V365.0 H243 V379" class="c-n" marker-end="url(#fnmob-n)"/>
+<path d="M243 444 V459.0 H82 V473" class="c-n" marker-end="url(#fnmob-n)"/>
+<path d="M82 538 V569.0" class="c-n" marker-end="url(#fnmob-n)"/>
+<path d="M150 600.0 H169.0" class="c-bad" marker-end="url(#fnmob-bad)"/>
+<text x="167.0" y="593.0" text-anchor="end" class="lb-bad">아니오</text>
+<path d="M82 630.0 V661" class="c-n" marker-end="url(#fnmob-n)"/>
+<text x="90" y="644.0" text-anchor="start" class="lb-n">예</text>
+<path d="M243 632.0 V661" class="c-bad" marker-end="url(#fnmob-bad)"/>
+<path d="M316.0 600.0 H327 V151.0 H317.0" class="c-bad-loop" marker-end="url(#fnmob-bad-loop)"/>
+<text x="337" y="375.5" text-anchor="middle" class="lb-bad" transform="rotate(-90 337 375.5)">처음부터 되돌아감</text>
+</svg></div>
+      </div>
+      <div class="fcol">
+        <div class="fhead"><span class="tag good">개선</span><span>그림으로 먼저 맞추고, 진척은 WBS로 봅니다</span></div>
+        <div class="scroll"><svg class="flowsvg dsk" viewBox="0 0 560 1188" role="img" aria-label="개선 흐름. 대표가 요청하면 개발팀이 요구사항을 글로 정의하고 와이어프레임을 그린다. 대표가 확인해 요청과 다르면 와이어프레임만 고쳐 다시 확인하고, 맞으면 승인한다. 개발팀은 프론트, 백엔드, 서버, API 연동으로 나눈 WBS를 만들고 개발한다. 주간 리뷰는 WBS 항목 상태로 진척을 보고, 늦어지면 사유와 새 날짜를 공유한 뒤 개발로 돌아간다. 마지막에 와이어프레임과 같은지 확인하고 반영한다."><defs><marker id="fxdsk-n" viewBox="0 0 10 10" refX="8.5" refY="5" markerWidth="7" markerHeight="7" orient="auto"><path d="M0 1 L9 5 L0 9 z" class="m-n"/></marker><marker id="fxdsk-bad" viewBox="0 0 10 10" refX="8.5" refY="5" markerWidth="7" markerHeight="7" orient="auto"><path d="M0 1 L9 5 L0 9 z" class="m-bad"/></marker><marker id="fxdsk-good" viewBox="0 0 10 10" refX="8.5" refY="5" markerWidth="7" markerHeight="7" orient="auto"><path d="M0 1 L9 5 L0 9 z" class="m-good"/></marker><marker id="fxdsk-bad-loop" viewBox="0 0 10 10" refX="8.5" refY="5" markerWidth="7" markerHeight="7" orient="auto"><path d="M0 1 L9 5 L0 9 z" class="m-bad-loop"/></marker><marker id="fxdsk-good-loop" viewBox="0 0 10 10" refX="8.5" refY="5" markerWidth="7" markerHeight="7" orient="auto"><path d="M0 1 L9 5 L0 9 z" class="m-good-loop"/></marker></defs>
+<rect x="0" y="0" width="267" height="1188" class="lane-d"/>
+<line x1="267" y1="0" x2="267" y2="1188" class="lane-div"/>
+<text class="lane-t" x="135" y="27" text-anchor="middle">대표</text>
+<text class="lane-t" x="400" y="27" text-anchor="middle">개발팀</text>
+<line x1="8" y1="38" x2="552" y2="38" class="lane-div2"/>
+<rect x="25.0" y="56" width="220" height="58" rx="4" class="b-n"/>
+<text x="135" y="81" text-anchor="middle" class="tt">요청</text>
+<text x="135" y="100" text-anchor="middle" class="ts">필요한 기능을 전달</text>
+<rect x="290.0" y="148" width="220" height="58" rx="4" class="b-good"/>
+<text x="400" y="173" text-anchor="middle" class="tt">요구사항 정의</text>
+<text x="400" y="192" text-anchor="middle" class="ts">글로 정리 · 요청 창구 하나</text>
+<rect x="290.0" y="240" width="220" height="58" rx="4" class="b-good"/>
+<text x="400" y="265" text-anchor="middle" class="tt">와이어프레임 작성</text>
+<text x="400" y="284" text-anchor="middle" class="ts">개발 전에 화면 배치부터</text>
+<rect x="25.0" y="332" width="220" height="58" rx="4" class="b-good"/>
+<text x="135" y="357" text-anchor="middle" class="tt">와이어프레임 확인</text>
+<text x="135" y="376" text-anchor="middle" class="ts">만들기 전에 화면을 봄</text>
+<polygon points="135,424.0 245,458.0 135,492.0 25,458.0" class="d-good"/>
+<text x="135" y="463.0" text-anchor="middle" class="tt">요청과 맞는가?</text>
+<circle cx="76.0" cy="437.0" r="11" class="bdg-good"/><text x="76.0" y="441.4" text-anchor="middle" class="bdg-t">1</text>
+<rect x="290.0" y="429.0" width="220" height="58" rx="4" class="b-n"/>
+<text x="400" y="454.0" text-anchor="middle" class="tt">와이어프레임 수정</text>
+<text x="400" y="473.0" text-anchor="middle" class="ts">그림만 고침 · 개발 전</text>
+<rect x="25.0" y="526" width="220" height="58" rx="4" class="b-mile"/>
+<text x="135" y="551" text-anchor="middle" class="tt-w">승인</text>
+<text x="135" y="570" text-anchor="middle" class="ts-w">이 화면대로 만들기로 확정</text>
+<rect x="290.0" y="618" width="220" height="74" rx="4" class="b-good"/>
+<text x="400" y="643" text-anchor="middle" class="tt">WBS 작성</text>
+<text x="400" y="662" text-anchor="middle" class="ts">프론트·백엔드·서버·API 연동</text>
+<text x="400" y="679" text-anchor="middle" class="ts">항목마다 담당·기간</text>
+<rect x="290.0" y="726" width="220" height="58" rx="4" class="b-n"/>
+<text x="400" y="751" text-anchor="middle" class="tt">개발</text>
+<text x="400" y="770" text-anchor="middle" class="ts">WBS 항목 단위로 진행</text>
+<rect x="25.0" y="818" width="220" height="58" rx="4" class="b-good"/>
+<text x="135" y="843" text-anchor="middle" class="tt">주간 리뷰</text>
+<text x="135" y="862" text-anchor="middle" class="ts">WBS 항목 상태로 진척 확인</text>
+<circle cx="25.0" cy="818" r="11" class="bdg-good"/><text x="25.0" y="822.4" text-anchor="middle" class="bdg-t">2</text>
+<polygon points="135,910.0 245,944.0 135,978.0 25,944.0" class="d-n"/>
+<text x="135" y="949.0" text-anchor="middle" class="tt">일정대로인가?</text>
+<rect x="290.0" y="915.0" width="220" height="58" rx="4" class="b-n"/>
+<text x="400" y="940.0" text-anchor="middle" class="tt">지연 사유와 새 날짜</text>
+<text x="400" y="959.0" text-anchor="middle" class="ts">며칠 밀리는지 먼저 공유</text>
+<polygon points="135,1012.0 245,1046.0 135,1080.0 25,1046.0" class="d-n"/>
+<text x="135" y="1051.0" text-anchor="middle" class="tt">와이어프레임과 같은가?</text>
+<rect x="290.0" y="1017.0" width="220" height="58" rx="4" class="b-n"/>
+<text x="400" y="1042.0" text-anchor="middle" class="tt">해당 항목 보완</text>
+<text x="400" y="1061.0" text-anchor="middle" class="ts">어긋난 항목만 다시 작업</text>
+<rect x="25.0" y="1114" width="485.0" height="58" rx="4" class="b-mile"/>
+<text x="267.5" y="1139" text-anchor="middle" class="tt-w">반영</text>
+<text x="267.5" y="1158" text-anchor="middle" class="ts-w">확인받은 화면 그대로 · 알려 둔 날짜에</text>
+<path d="M135 114 V131.0 H400 V147" class="c-n" marker-end="url(#fxdsk-n)"/>
+<path d="M400 206 V239" class="c-n" marker-end="url(#fxdsk-n)"/>
+<path d="M400 298 V315.0 H135 V331" class="c-n" marker-end="url(#fxdsk-n)"/>
+<path d="M135 390 V423.0" class="c-n" marker-end="url(#fxdsk-n)"/>
+<path d="M245 458.0 H289.0" class="c-n" marker-end="url(#fxdsk-n)"/>
+<text x="287.0" y="451.0" text-anchor="end" class="lb-n">아니오</text>
+<path d="M400 429.0 V361.0 H246.0" class="c-good-loop" marker-end="url(#fxdsk-good-loop)"/>
+<text x="322.5" y="354.0" text-anchor="middle" class="lb-good">다시 확인</text>
+<path d="M135 492.0 V525" class="c-good" marker-end="url(#fxdsk-good)"/>
+<text x="143" y="506.0" text-anchor="start" class="lb-good">예</text>
+<path d="M135 584 V601.0 H400 V617" class="c-good" marker-end="url(#fxdsk-good)"/>
+<path d="M400 692 V725" class="c-n" marker-end="url(#fxdsk-n)"/>
+<path d="M400 784 V801.0 H135 V817" class="c-n" marker-end="url(#fxdsk-n)"/>
+<path d="M135 876 V909.0" class="c-n" marker-end="url(#fxdsk-n)"/>
+<path d="M245 944.0 H289.0" class="c-n" marker-end="url(#fxdsk-n)"/>
+<text x="287.0" y="937.0" text-anchor="end" class="lb-n">아니오</text>
+<path d="M135 978.0 V1011.0" class="c-good" marker-end="url(#fxdsk-good)"/>
+<text x="143" y="992.0" text-anchor="start" class="lb-good">예</text>
+<path d="M245 1046.0 H289.0" class="c-n" marker-end="url(#fxdsk-n)"/>
+<text x="287.0" y="1039.0" text-anchor="end" class="lb-n">아니오</text>
+<path d="M135 1080.0 V1113" class="c-good" marker-end="url(#fxdsk-good)"/>
+<text x="143" y="1094.0" text-anchor="start" class="lb-good">예</text>
+<path d="M510.0 1046.0 H528 V944.0" class="c-good-loop"/>
+<path d="M510.0 944.0 H528 V755.0 H511.0" class="c-good-loop" marker-end="url(#fxdsk-good-loop)"/>
+<text x="547" y="900.5" text-anchor="middle" class="lb-good" transform="rotate(-90 547 900.5)">개발로 되돌아감</text>
+</svg><svg class="flowsvg mob" viewBox="0 0 340 1084" role="img" aria-label="개선 흐름. 대표가 요청하면 개발팀이 요구사항을 글로 정의하고 와이어프레임을 그린다. 대표가 확인해 요청과 다르면 와이어프레임만 고쳐 다시 확인하고, 맞으면 승인한다. 개발팀은 프론트, 백엔드, 서버, API 연동으로 나눈 WBS를 만들고 개발한다. 주간 리뷰는 WBS 항목 상태로 진척을 보고, 늦어지면 사유와 새 날짜를 공유한 뒤 개발로 돌아간다. 마지막에 와이어프레임과 같은지 확인하고 반영한다."><defs><marker id="fxmob-n" viewBox="0 0 10 10" refX="8.5" refY="5" markerWidth="7" markerHeight="7" orient="auto"><path d="M0 1 L9 5 L0 9 z" class="m-n"/></marker><marker id="fxmob-bad" viewBox="0 0 10 10" refX="8.5" refY="5" markerWidth="7" markerHeight="7" orient="auto"><path d="M0 1 L9 5 L0 9 z" class="m-bad"/></marker><marker id="fxmob-good" viewBox="0 0 10 10" refX="8.5" refY="5" markerWidth="7" markerHeight="7" orient="auto"><path d="M0 1 L9 5 L0 9 z" class="m-good"/></marker><marker id="fxmob-bad-loop" viewBox="0 0 10 10" refX="8.5" refY="5" markerWidth="7" markerHeight="7" orient="auto"><path d="M0 1 L9 5 L0 9 z" class="m-bad-loop"/></marker><marker id="fxmob-good-loop" viewBox="0 0 10 10" refX="8.5" refY="5" markerWidth="7" markerHeight="7" orient="auto"><path d="M0 1 L9 5 L0 9 z" class="m-good-loop"/></marker></defs>
+<rect x="0" y="0" width="162.5" height="1084" class="lane-d"/>
+<line x1="162.5" y1="0" x2="162.5" y2="1084" class="lane-div"/>
+<text class="lane-t" x="82" y="22" text-anchor="middle">대표</text>
+<text class="lane-t" x="243" y="22" text-anchor="middle">개발팀</text>
+<line x1="8" y1="32" x2="332" y2="32" class="lane-div2"/>
+<rect x="9.0" y="46" width="146" height="50" rx="4" class="b-n"/>
+<text x="82" y="66" text-anchor="middle" class="tt">요청</text>
+<text x="82" y="83" text-anchor="middle" class="ts">필요한 기능을 전달</text>
+<rect x="170.0" y="126" width="146" height="64" rx="4" class="b-good"/>
+<text x="243" y="146" text-anchor="middle" class="tt">요구사항 정의</text>
+<text x="243" y="163" text-anchor="middle" class="ts">글로 정리</text>
+<text x="243" y="177" text-anchor="middle" class="ts">요청 창구 하나</text>
+<rect x="170.0" y="220" width="146" height="50" rx="4" class="b-good"/>
+<text x="243" y="240" text-anchor="middle" class="tt">와이어프레임 작성</text>
+<text x="243" y="257" text-anchor="middle" class="ts">화면 배치부터 그림</text>
+<rect x="9.0" y="300" width="146" height="50" rx="4" class="b-good"/>
+<text x="82" y="320" text-anchor="middle" class="tt">와이어프레임 확인</text>
+<text x="82" y="337" text-anchor="middle" class="ts">만들기 전에 화면을 봄</text>
+<polygon points="82,382.0 150,412.0 82,442.0 14,412.0" class="d-good"/>
+<text x="82" y="417.0" text-anchor="middle" class="tt">요청과 맞는가?</text>
+<circle cx="44.0" cy="393.0" r="9" class="bdg-good"/><text x="44.0" y="396.6" text-anchor="middle" class="bdg-t">1</text>
+<rect x="170.0" y="380.0" width="146" height="64" rx="4" class="b-n"/>
+<text x="243" y="400.0" text-anchor="middle" class="tt">와이어프레임 수정</text>
+<text x="243" y="417.0" text-anchor="middle" class="ts">그림만 고침</text>
+<text x="243" y="431.0" text-anchor="middle" class="ts">개발 전</text>
+<rect x="9.0" y="474" width="146" height="50" rx="4" class="b-mile"/>
+<text x="82" y="494" text-anchor="middle" class="tt-w">승인</text>
+<text x="82" y="511" text-anchor="middle" class="ts-w">이 화면대로 확정</text>
+<rect x="170.0" y="554" width="146" height="64" rx="4" class="b-good"/>
+<text x="243" y="574" text-anchor="middle" class="tt">WBS 작성</text>
+<text x="243" y="591" text-anchor="middle" class="ts">프론트·백엔드·서버</text>
+<text x="243" y="605" text-anchor="middle" class="ts">API 연동 · 담당·기간</text>
+<rect x="170.0" y="648" width="146" height="50" rx="4" class="b-n"/>
+<text x="243" y="668" text-anchor="middle" class="tt">개발</text>
+<text x="243" y="685" text-anchor="middle" class="ts">WBS 항목 단위로 진행</text>
+<rect x="9.0" y="728" width="146" height="64" rx="4" class="b-good"/>
+<text x="82" y="748" text-anchor="middle" class="tt">주간 리뷰</text>
+<text x="82" y="765" text-anchor="middle" class="ts">WBS 항목 상태로</text>
+<text x="82" y="779" text-anchor="middle" class="ts">진척 확인</text>
+<circle cx="9.0" cy="728" r="9" class="bdg-good"/><text x="9.0" y="731.6" text-anchor="middle" class="bdg-t">2</text>
+<polygon points="82,824.0 150,854.0 82,884.0 14,854.0" class="d-n"/>
+<text x="82" y="859.0" text-anchor="middle" class="tt">일정대로인가?</text>
+<rect x="170.0" y="822.0" width="146" height="64" rx="4" class="b-n"/>
+<text x="243" y="842.0" text-anchor="middle" class="tt">지연 사유와 새 날짜</text>
+<text x="243" y="859.0" text-anchor="middle" class="ts">며칠 밀리는지</text>
+<text x="243" y="873.0" text-anchor="middle" class="ts">먼저 공유</text>
+<polygon points="82,916.0 150,952.0 82,988.0 14,952.0" class="d-n"/>
+<text x="82" y="949.0" text-anchor="middle" class="tt">와이어프레임과</text>
+<text x="82" y="966.0" text-anchor="middle" class="tt">같은가?</text>
+<rect x="170.0" y="920.0" width="146" height="64" rx="4" class="b-n"/>
+<text x="243" y="940.0" text-anchor="middle" class="tt">해당 항목 보완</text>
+<text x="243" y="957.0" text-anchor="middle" class="ts">어긋난 항목만</text>
+<text x="243" y="971.0" text-anchor="middle" class="ts">다시 작업</text>
+<rect x="9.0" y="1018" width="307.0" height="50" rx="4" class="b-mile"/>
+<text x="162.5" y="1038" text-anchor="middle" class="tt-w">반영</text>
+<text x="162.5" y="1055" text-anchor="middle" class="ts-w">확인받은 화면 그대로 · 알려 둔 날짜에</text>
+<path d="M82 96 V111.0 H243 V125" class="c-n" marker-end="url(#fxmob-n)"/>
+<path d="M243 190 V219" class="c-n" marker-end="url(#fxmob-n)"/>
+<path d="M243 270 V285.0 H82 V299" class="c-n" marker-end="url(#fxmob-n)"/>
+<path d="M82 350 V381.0" class="c-n" marker-end="url(#fxmob-n)"/>
+<path d="M150 412.0 H169.0" class="c-n" marker-end="url(#fxmob-n)"/>
+<text x="167.0" y="405.0" text-anchor="end" class="lb-n">아니오</text>
+<path d="M243 380.0 V325.0 H156.0" class="c-good-loop" marker-end="url(#fxmob-good-loop)"/>
+<text x="199.0" y="318.0" text-anchor="middle" class="lb-good">다시 확인</text>
+<path d="M82 442.0 V473" class="c-good" marker-end="url(#fxmob-good)"/>
+<text x="90" y="456.0" text-anchor="start" class="lb-good">예</text>
+<path d="M82 524 V539.0 H243 V553" class="c-good" marker-end="url(#fxmob-good)"/>
+<path d="M243 618 V647" class="c-n" marker-end="url(#fxmob-n)"/>
+<path d="M243 698 V713.0 H82 V727" class="c-n" marker-end="url(#fxmob-n)"/>
+<path d="M82 792 V823.0" class="c-n" marker-end="url(#fxmob-n)"/>
+<path d="M150 854.0 H169.0" class="c-n" marker-end="url(#fxmob-n)"/>
+<text x="167.0" y="847.0" text-anchor="end" class="lb-n">아니오</text>
+<path d="M82 884.0 V915.0" class="c-good" marker-end="url(#fxmob-good)"/>
+<text x="90" y="898.0" text-anchor="start" class="lb-good">예</text>
+<path d="M150 952.0 H169.0" class="c-n" marker-end="url(#fxmob-n)"/>
+<text x="167.0" y="945.0" text-anchor="end" class="lb-n">아니오</text>
+<path d="M82 988.0 V1017" class="c-good" marker-end="url(#fxmob-good)"/>
+<text x="90" y="1002.0" text-anchor="start" class="lb-good">예</text>
+<path d="M316.0 952.0 H327 V854.0" class="c-good-loop"/>
+<path d="M316.0 854.0 H327 V673.0 H317.0" class="c-good-loop" marker-end="url(#fxmob-good-loop)"/>
+<text x="337" y="812.5" text-anchor="middle" class="lb-good" transform="rotate(-90 337 812.5)">개발로 되돌아감</text>
+</svg></div>
+      </div>
+    </div>
+      </figure>
+  <div class="readout">
+    <div class="r"><b>지금 — 고리가 크고 늦게 돕니다</b>어긋남이 개발을 다 끝낸 주간 리뷰에서 드러나, 되돌아가면 처음부터 다시 만들고 다른 과제까지 밀립니다.</div>
+    <div class="g"><b>개선 — 고리가 작고 일찍 돕니다</b>어긋남은 개발 전 와이어프레임에서 걸러지고, 늦어지는 일은 WBS 항목 하나 단위로 미리 보입니다.</div>
+  </div>
+</section>
+
+<section class="sec">
+  <div class="sechead"><span class="secnum">03</span><h2>와이어프레임 — 만들기 전에 화면을 맞춥니다</h2></div>
+  <p class="lead">와이어프레임은 색과 디자인을 빼고, 화면에 무엇이 어디에 놓이는지만 그린 설계 그림입니다. 웹 화면은 이것만 보면 결과를 거의 그대로 짐작할 수 있습니다.</p>
+  <div class="facts">
+    <div><b>반나절~하루</b><span>화면 한 장 그리는 데 드는 시간</span></div>
+    <div><b>몇 분</b><span>대표님 의견대로 고치는 데 드는 시간</span></div>
+    <div><b>개발 전</b><span>요청과 다른 점이 드러나는 시점</span></div>
+  </div>
+
+  <figure>
+    <figcaption><b>도표 2</b> · 말로만 전하면 — 한 문장, 세 가지 화면</figcaption>
+    <div class="ask"><em>요청</em>“정산 화면에 지난달 이익금을 이월해서 자세히 보여 주세요.”</div>
+    <div class="interp">
+      <div class="ip">
+        <span class="k">해석 가</span>
+        <div class="mini" aria-hidden="true">
+          <div class="bar s"></div><div class="row"><div class="bar"></div><div class="bar"></div></div><div class="row"><div class="bar"></div><div class="bar"></div></div><div class="row"><div class="bar"></div><div class="bar"></div></div><div class="sp"></div>
+          <div class="hl thin">맨 아래 · 이월 합계 한 줄</div>
+        </div>
+        <span class="cap">표 맨 아래에 이월 합계만 한 줄 더합니다.</span>
+      </div>
+      <div class="ip">
+        <span class="k">해석 나</span>
+        <div class="mini" aria-hidden="true">
+          <div class="hl">맨 위 · 지난달 이월 이익금</div>
+          <div class="bar s"></div><div class="row"><div class="bar"></div><div class="bar"></div></div><div class="row"><div class="bar"></div><div class="bar"></div></div>
+        </div>
+        <span class="cap">화면 맨 위에 이월 금액 칸을 따로 둡니다.</span>
+      </div>
+      <div class="ip">
+        <span class="k">해석 다</span>
+        <div class="mini" aria-hidden="true">
+          <div class="hl thin">지난달 이월 이익금 ▾</div>
+          <div class="indent"><div class="bar"></div><div class="bar"></div><div class="bar s"></div></div>
+          <div class="row"><div class="bar"></div><div class="bar"></div></div>
+        </div>
+        <span class="cap">이월 금액을 누르면 지난달 내역이 펼쳐집니다.</span>
+      </div>
+    </div>
+    <p class="note">셋 다 요청 문장에 맞습니다. 말로만 전하면 셋 중 무엇이 만들어질지 주간 리뷰 전까지 알 수 없습니다.</p>
+  </figure>
+
+  <figure>
+    <figcaption><b>도표 3</b> · 와이어프레임 예시 — 정산 화면</figcaption>
+    <div class="wfbox">
+      <div class="wf" role="img" aria-label="정산 화면 와이어프레임. 맨 위에 지난달 이월 이익금, 이번 달 매출, 비용, 이월을 더한 이번 달 이익 칸이 있고, 그 아래 9월 이월 내역이 펼쳐진 표와 10월 거래 내역 표가 있다.">
+        <div class="top"><b>정산</b><span class="mon">◀ 2026년 10월 ▶</span><span class="btn">인쇄</span></div>
+        <div class="cards">
+          <div class="c hl"><span class="mk">1</span><span class="l">지난달 이월 이익금</span><span class="v">○○○원</span><span class="hint">9월에서 넘어옴</span></div>
+          <div class="c"><span class="l">이번 달 매출</span><span class="v">○○○원</span></div>
+          <div class="c"><span class="l">이번 달 비용</span><span class="v">○○○원</span></div>
+          <div class="c hl"><span class="mk">2</span><span class="l">이번 달 이익</span><span class="v">○○○원</span><span class="hint">이월 포함</span></div>
+        </div>
+        <div class="blk hl">
+          <div class="bh"><span>9월 이월 내역 ▾</span><span class="mk">3</span></div>
+          <div class="tr th"><span>일자</span><span>내용</span><span>금액</span></div>
+          <div class="tr"><div class="bar"></div><div class="bar"></div><div class="bar"></div></div>
+          <div class="tr"><div class="bar"></div><div class="bar"></div><div class="bar"></div></div>
+          <div class="tr"><div class="bar"></div><div class="bar"></div><div class="bar"></div></div>
+          <div class="tr sum"><span></span><span>이월 합계</span><span class="v">○○○원</span></div>
+        </div>
+        <div class="blk">
+          <div class="bh"><span>10월 거래 내역</span></div>
+          <div class="tr"><div class="bar"></div><div class="bar"></div><div class="bar"></div></div>
+          <div class="tr"><div class="bar"></div><div class="bar"></div><div class="bar"></div></div>
+        </div>
+      </div>
+      <div class="checks">
+        <span class="t">개발 전에 대표님이 정하실 것</span>
+        <div class="chk"><span class="mk">1</span><span>지난달 이익금을 화면 맨 위 첫 칸에 둡니다.<span class="opt">이 자리가 맞는지</span></span></div>
+        <div class="chk"><span class="mk">2</span><span>이번 달 이익에 이월 금액을 더해 보여 줍니다.<span class="opt">더해서 볼지, 따로 볼지</span></span></div>
+        <div class="chk"><span class="mk">3</span><span>“자세히”는 이 화면에서 펼쳐 봅니다.<span class="opt">여기서 펼칠지, 다른 화면으로 넘어갈지</span></span></div>
+      </div>
+    </div>
+    <p class="note">설명을 위한 예시입니다. 실제 배치는 대표님 확인으로 정합니다. 그림에 표시만 해 주시면, 세 가지가 정해진 뒤 개발에 들어갑니다. 지금 방식에서는 이 세 가지가 주간 리뷰에서야 정해졌습니다.</p>
+  </figure>
+</section>
+
+<section class="sec">
+  <div class="sechead"><span class="secnum">04</span><h2>WBS — 과제를 작업 단위로 나눠 관리합니다</h2></div>
+  <p class="lead">WBS는 과제 하나를 실제로 손이 가는 작업까지 나눈 목록입니다. 작업마다 <span class="nw">프론트·백엔드·서버·API 연동</span> 중 무엇인지, 누가, 며칠, 지금 어떤 상태인지를 적습니다.</p>
+  <p class="lead">그러면 진척을 말이 아니라 표로 이야기하게 됩니다.</p>
+
+  <figure>
+    <figcaption><b>도표 4</b> · 같은 주간 리뷰, 다른 보고</figcaption>
+    <div class="talk">
+      <div class="tk now">
+        <div class="h">지금 보고</div>
+        <div class="bd">
+          <div class="bubble">“문자 보내는 기능 개발하느라 다른 일정을 못 했습니다. 금방 하겠습니다.”</div>
+          <span class="miss">어디까지 됐는지, 언제 끝나는지, 다른 과제는 언제 시작하는지 알 수 없습니다.</span>
+        </div>
+      </div>
+      <div class="tk next">
+        <div class="h">WBS로 하는 보고 · 11월 20일</div>
+        <div class="bd"><ul>
+          <li>정기 문자 발송 <b>21개 작업 중 14개 완료</b>, 3개 진행 중입니다.</li>
+          <li>예약 자동 실행기(서버)가 <b>2일 늦어져</b>, 완료 예정이 11월 27일에서 <b>12월 1일</b>로 밀립니다.</li>
+          <li>프론트 담당은 <b>11월 24일부터 비어</b>, 일일업무보고 전달사항 수정을 그날 시작할 수 있습니다.</li>
+        </ul></div>
+      </div>
+    </div>
+  </figure>
+
+  <figure>
+    <figcaption><b>도표 5</b> · WBS 예시 — 정기 문자 발송 시스템 (11월 20일 주간 리뷰 기준)</figcaption>
+    <div class="kpis">
+      <div class="kpi"><b>14<small> / 21</small></b><span>완료한 작업</span></div>
+      <div class="kpi"><b>3</b><span>진행 중</span></div>
+      <div class="kpi"><b>4</b><span>대기</span></div>
+      <div class="kpi r"><b>+2일</b><span>지연 1건 · 완료 예정 <span class="nw">12월 1일</span></span></div>
+    </div>
+    <div class="tablewrap"><table class="wbs">
+      <thead><tr><th style="width:44px">번호</th><th>작업</th><th>구분</th><th>담당</th><th class="r">기간</th><th>일정</th><th>상태</th></tr></thead>
+      <tbody>
+<tr class="grp"><td class="mono no">1</td><td colspan="5" class="nm">발송 대상 관리</td><td class="prog-cnt">4/4 완료</td></tr>
+<tr><td class="mono no">1.1</td><td class="nm">대상 목록·검색 화면</td><td class="ct"><span class="cat">프론트</span></td><td class="who">김○○</td><td class="mono r dd">2일</td><td class="mono sc">11/9–11/10</td><td><span class="st st-done">완료</span></td></tr>
+<tr><td class="mono no">1.2</td><td class="nm">그룹 만들기·편집 화면</td><td class="ct"><span class="cat">프론트</span></td><td class="who">김○○</td><td class="mono r dd">1일</td><td class="mono sc">11/11</td><td><span class="st st-done">완료</span></td></tr>
+<tr><td class="mono no">1.3</td><td class="nm">대상·그룹 저장과 조회</td><td class="ct"><span class="cat">백엔드</span></td><td class="who">이○○</td><td class="mono r dd">2일</td><td class="mono sc">11/9–11/10</td><td><span class="st st-done">완료</span></td></tr>
+<tr><td class="mono no">1.4</td><td class="nm">수신 거부 번호 자동 제외</td><td class="ct"><span class="cat">백엔드</span></td><td class="who">이○○</td><td class="mono r dd">1일</td><td class="mono sc">11/11</td><td><span class="st st-done">완료</span></td></tr>
+<tr class="grp"><td class="mono no">2</td><td colspan="5" class="nm">문자 내용</td><td class="prog-cnt">4/4 완료</td></tr>
+<tr><td class="mono no">2.1</td><td class="nm">문안 작성 화면 (글자 수·장문 여부 표시)</td><td class="ct"><span class="cat">프론트</span></td><td class="who">김○○</td><td class="mono r dd">2일</td><td class="mono sc">11/12–11/13</td><td><span class="st st-done">완료</span></td></tr>
+<tr><td class="mono no">2.2</td><td class="nm">이름·날짜 자동 넣기</td><td class="ct"><span class="cat">백엔드</span></td><td class="who">이○○</td><td class="mono r dd">1일</td><td class="mono sc">11/12</td><td><span class="st st-done">완료</span></td></tr>
+<tr><td class="mono no">2.3</td><td class="nm">문안 저장·불러오기</td><td class="ct"><span class="cat">백엔드</span></td><td class="who">이○○</td><td class="mono r dd">1일</td><td class="mono sc">11/13</td><td><span class="st st-done">완료</span></td></tr>
+<tr><td class="mono no">2.4</td><td class="nm">발신번호 등록 확인</td><td class="ct"><span class="cat">API 연동</span></td><td class="who">박○○</td><td class="mono r dd">1일</td><td class="mono sc">11/9</td><td><span class="st st-done">완료</span></td></tr>
+<tr class="grp"><td class="mono no">3</td><td colspan="5" class="nm">정기 예약</td><td class="prog-cnt">2/3 완료</td></tr>
+<tr><td class="mono no">3.1</td><td class="nm">반복 주기 설정 화면 (매일·매주·매월·날짜 지정)</td><td class="ct"><span class="cat">프론트</span></td><td class="who">김○○</td><td class="mono r dd">2일</td><td class="mono sc">11/16–11/17</td><td><span class="st st-done">완료</span></td></tr>
+<tr><td class="mono no">3.2</td><td class="nm">예약 저장·다음 발송일 계산</td><td class="ct"><span class="cat">백엔드</span></td><td class="who">이○○</td><td class="mono r dd">2일</td><td class="mono sc">11/16–11/17</td><td><span class="st st-done">완료</span></td></tr>
+<tr class="late"><td class="mono no">3.3</td><td class="nm">예약 자동 실행기 (정한 시각에 발송 시작)<span class="why">사유: 예약 시각 오차 수정 · 이후 항목 2일씩 밀림</span></td><td class="ct"><span class="cat">서버</span></td><td class="who">이○○</td><td class="mono r dd">3일</td><td class="mono sc"><s>11/18–11/20</s> <b class="red">→ 11/24</b></td><td><span class="st st-late">지연 2일</span></td></tr>
+<tr class="grp"><td class="mono no">4</td><td colspan="5" class="nm">발송 실행</td><td class="prog-cnt">4/4 완료</td></tr>
+<tr><td class="mono no">4.1</td><td class="nm">문자 발송 업체 연동 (단문·장문)</td><td class="ct"><span class="cat">API 연동</span></td><td class="who">박○○</td><td class="mono r dd">3일</td><td class="mono sc">11/10–11/12</td><td><span class="st st-done">완료</span></td></tr>
+<tr><td class="mono no">4.2</td><td class="nm">발송 대기열 · 나눠 보내기</td><td class="ct"><span class="cat">서버</span></td><td class="who">박○○</td><td class="mono r dd">2일</td><td class="mono sc">11/13–11/16</td><td><span class="st st-done">완료</span></td></tr>
+<tr><td class="mono no">4.3</td><td class="nm">실패 시 자동 재발송</td><td class="ct"><span class="cat">API 연동</span></td><td class="who">박○○</td><td class="mono r dd">1일</td><td class="mono sc">11/17</td><td><span class="st st-done">완료</span></td></tr>
+<tr><td class="mono no">4.4</td><td class="nm">발송 이력 기록</td><td class="ct"><span class="cat">백엔드</span></td><td class="who">박○○</td><td class="mono r dd">1일</td><td class="mono sc">11/18</td><td><span class="st st-done">완료</span></td></tr>
+<tr class="grp"><td class="mono no">5</td><td colspan="5" class="nm">결과 확인</td><td class="prog-cnt">0/4 완료</td></tr>
+<tr><td class="mono no">5.1</td><td class="nm">발송 결과 받기 (성공·실패·사유)</td><td class="ct"><span class="cat">API 연동</span></td><td class="who">박○○</td><td class="mono r dd">2일</td><td class="mono sc">11/19–11/20</td><td><span class="st st-prog">진행 중</span></td></tr>
+<tr><td class="mono no">5.2</td><td class="nm">발송 결과 화면 (건수·실패 사유)</td><td class="ct"><span class="cat">프론트</span></td><td class="who">김○○</td><td class="mono r dd">3일</td><td class="mono sc">11/18–11/20</td><td><span class="st st-prog">진행 중</span></td></tr>
+<tr><td class="mono no">5.3</td><td class="nm">실패 건 다시 보내기</td><td class="ct"><span class="cat">프론트</span></td><td class="who">김○○</td><td class="mono r dd">1일</td><td class="mono sc">11/23</td><td><span class="st st-wait">대기</span></td></tr>
+<tr><td class="mono no">5.4</td><td class="nm">결과 집계 (월별·대상별)</td><td class="ct"><span class="cat">백엔드</span></td><td class="who">이○○</td><td class="mono r dd">2일</td><td class="mono sc"><s>11/23–11/24</s> <b class="red">→ 11/25–11/26</b></td><td><span class="st st-wait">대기</span></td></tr>
+<tr class="grp"><td class="mono no">6</td><td colspan="5" class="nm">시험·반영</td><td class="prog-cnt">0/2 완료</td></tr>
+<tr><td class="mono no">6.1</td><td class="nm">전체 흐름 시험 (예약 → 발송 → 결과)</td><td class="ct"><span class="cat">공통</span></td><td class="who">전원</td><td class="mono r dd">2일</td><td class="mono sc"><s>11/25–11/26</s> <b class="red">→ 11/27–11/30</b></td><td><span class="st st-wait">대기</span></td></tr>
+<tr><td class="mono no">6.2</td><td class="nm">실제 서비스 반영 · 첫 발송 확인</td><td class="ct"><span class="cat">서버</span></td><td class="who">이○○</td><td class="mono r dd">1일</td><td class="mono sc"><s>11/27</s> <b class="red">→ 12/1</b></td><td><span class="st st-wait">대기</span></td></tr>
+      </tbody>
+    </table></div>
+    <p class="swipe">표가 잘리면 옆으로 밀어 보십시오.</p>
+    <p class="note">담당 이름과 날짜는 설명을 위한 예시입니다.</p>
+  </figure>
+
+  <figure>
+    <figcaption><b>도표 6</b> · 같은 WBS를 일정 막대로 본 모습</figcaption>
+    <div class="tablewrap"><svg class="ganttsvg dsk" viewBox="0 0 719 727" role="img" aria-label="정기 문자 발송 과제 일정 막대. 11월 20일 기준 14개 항목 완료, 예약 자동 실행기가 2일 늦어져 뒤 항목이 2일씩 밀리고 마지막 반영이 11월 27일에서 12월 1일로 옮겨진다."><text x="178" y="14" class="g-mon">11월</text>
+<text x="643" y="14" class="g-mon">12월</text>
+<text x="191.5" y="36" text-anchor="middle" class="g-day">9</text>
+<text x="222.5" y="36" text-anchor="middle" class="g-day">10</text>
+<text x="253.5" y="36" text-anchor="middle" class="g-day">11</text>
+<text x="284.5" y="36" text-anchor="middle" class="g-day">12</text>
+<text x="315.5" y="36" text-anchor="middle" class="g-day">13</text>
+<text x="346.5" y="36" text-anchor="middle" class="g-day">16</text>
+<text x="377.5" y="36" text-anchor="middle" class="g-day">17</text>
+<text x="408.5" y="36" text-anchor="middle" class="g-day">18</text>
+<text x="439.5" y="36" text-anchor="middle" class="g-day">19</text>
+<text x="470.5" y="36" text-anchor="middle" class="g-day">20</text>
+<text x="501.5" y="36" text-anchor="middle" class="g-day">23</text>
+<text x="532.5" y="36" text-anchor="middle" class="g-day">24</text>
+<text x="563.5" y="36" text-anchor="middle" class="g-day">25</text>
+<text x="594.5" y="36" text-anchor="middle" class="g-day">26</text>
+<text x="625.5" y="36" text-anchor="middle" class="g-day">27</text>
+<text x="656.5" y="36" text-anchor="middle" class="g-day">30</text>
+<text x="687.5" y="36" text-anchor="middle" class="g-day">1</text>
+<line x1="176" y1="20" x2="176" y2="693" class="g-wk"/>
+<line x1="207" y1="42" x2="207" y2="693" class="g-dl"/>
+<line x1="238" y1="42" x2="238" y2="693" class="g-dl"/>
+<line x1="269" y1="42" x2="269" y2="693" class="g-dl"/>
+<line x1="300" y1="42" x2="300" y2="693" class="g-dl"/>
+<line x1="331" y1="20" x2="331" y2="693" class="g-wk"/>
+<line x1="362" y1="42" x2="362" y2="693" class="g-dl"/>
+<line x1="393" y1="42" x2="393" y2="693" class="g-dl"/>
+<line x1="424" y1="42" x2="424" y2="693" class="g-dl"/>
+<line x1="455" y1="42" x2="455" y2="693" class="g-dl"/>
+<line x1="486" y1="20" x2="486" y2="693" class="g-wk"/>
+<line x1="517" y1="42" x2="517" y2="693" class="g-dl"/>
+<line x1="548" y1="42" x2="548" y2="693" class="g-dl"/>
+<line x1="579" y1="42" x2="579" y2="693" class="g-dl"/>
+<line x1="610" y1="42" x2="610" y2="693" class="g-dl"/>
+<line x1="641" y1="20" x2="641" y2="693" class="g-wk"/>
+<line x1="672" y1="42" x2="672" y2="693" class="g-dl"/>
+<line x1="703" y1="20" x2="703" y2="693" class="g-wk"/>
+<line x1="8" y1="44" x2="715" y2="44" class="g-hl"/>
+<text x="8" y="65" class="g-grp">1  발송 대상 관리</text>
+<rect x="177" y="59" width="91" height="4" rx="2" class="g-sum"/>
+<text x="18" y="90.5" class="g-lab"><tspan class="g-no">1.1</tspan> 대상 목록·검색 화면</text>
+<rect x="178" y="80.5" width="58" height="12" rx="2" class="g-done"/>
+<text x="18" y="113.5" class="g-lab"><tspan class="g-no">1.2</tspan> 그룹 만들기·편집</text>
+<rect x="240" y="103.5" width="27" height="12" rx="2" class="g-done"/>
+<text x="18" y="136.5" class="g-lab"><tspan class="g-no">1.3</tspan> 대상·그룹 저장</text>
+<rect x="178" y="126.5" width="58" height="12" rx="2" class="g-done"/>
+<text x="18" y="159.5" class="g-lab"><tspan class="g-no">1.4</tspan> 수신 거부 제외</text>
+<rect x="240" y="149.5" width="27" height="12" rx="2" class="g-done"/>
+<text x="8" y="184" class="g-grp">2  문자 내용</text>
+<rect x="177" y="178" width="153" height="4" rx="2" class="g-sum"/>
+<text x="18" y="209.5" class="g-lab"><tspan class="g-no">2.1</tspan> 문안 작성 화면</text>
+<rect x="271" y="199.5" width="58" height="12" rx="2" class="g-done"/>
+<text x="18" y="232.5" class="g-lab"><tspan class="g-no">2.2</tspan> 이름·날짜 자동 넣기</text>
+<rect x="271" y="222.5" width="27" height="12" rx="2" class="g-done"/>
+<text x="18" y="255.5" class="g-lab"><tspan class="g-no">2.3</tspan> 문안 저장·불러오기</text>
+<rect x="302" y="245.5" width="27" height="12" rx="2" class="g-done"/>
+<text x="18" y="278.5" class="g-lab"><tspan class="g-no">2.4</tspan> 발신번호 등록 확인</text>
+<rect x="178" y="268.5" width="27" height="12" rx="2" class="g-done"/>
+<text x="8" y="303" class="g-grp">3  정기 예약</text>
+<rect x="332" y="297" width="215" height="4" rx="2" class="g-sum"/>
+<text x="18" y="328.5" class="g-lab"><tspan class="g-no">3.1</tspan> 반복 주기 설정 화면</text>
+<rect x="333" y="318.5" width="58" height="12" rx="2" class="g-done"/>
+<text x="18" y="351.5" class="g-lab"><tspan class="g-no">3.2</tspan> 예약 저장·발송일 계산</text>
+<rect x="333" y="341.5" width="58" height="12" rx="2" class="g-done"/>
+<text x="18" y="374.5" class="g-lab"><tspan class="g-no">3.3</tspan> 예약 자동 실행기</text>
+<rect x="395" y="364.5" width="89" height="12" rx="2" class="g-prog"/>
+<rect x="484" y="364.5" width="62" height="12" rx="2" class="g-late"/>
+<text x="550" y="374.5" class="g-latet">+2일</text>
+<text x="8" y="399" class="g-grp">4  발송 실행</text>
+<rect x="208" y="393" width="215" height="4" rx="2" class="g-sum"/>
+<text x="18" y="424.5" class="g-lab"><tspan class="g-no">4.1</tspan> 문자 발송 업체 연동</text>
+<rect x="209" y="414.5" width="89" height="12" rx="2" class="g-done"/>
+<text x="18" y="447.5" class="g-lab"><tspan class="g-no">4.2</tspan> 발송 대기열</text>
+<rect x="302" y="437.5" width="58" height="12" rx="2" class="g-done"/>
+<text x="18" y="470.5" class="g-lab"><tspan class="g-no">4.3</tspan> 실패 시 재발송</text>
+<rect x="364" y="460.5" width="27" height="12" rx="2" class="g-done"/>
+<text x="18" y="493.5" class="g-lab"><tspan class="g-no">4.4</tspan> 발송 이력 기록</text>
+<rect x="395" y="483.5" width="27" height="12" rx="2" class="g-done"/>
+<text x="8" y="518" class="g-grp">5  결과 확인</text>
+<rect x="394" y="512" width="215" height="4" rx="2" class="g-sum"/>
+<text x="18" y="543.5" class="g-lab"><tspan class="g-no">5.1</tspan> 발송 결과 받기</text>
+<rect x="426" y="533.5" width="58" height="12" rx="2" class="g-prog"/>
+<text x="18" y="566.5" class="g-lab"><tspan class="g-no">5.2</tspan> 발송 결과 화면</text>
+<rect x="395" y="556.5" width="89" height="12" rx="2" class="g-prog"/>
+<text x="18" y="589.5" class="g-lab"><tspan class="g-no">5.3</tspan> 실패 건 다시 보내기</text>
+<rect x="488" y="579.5" width="27" height="12" rx="2" class="g-wait"/>
+<text x="18" y="612.5" class="g-lab"><tspan class="g-no">5.4</tspan> 결과 집계</text>
+<rect x="488" y="602.5" width="58" height="12" rx="2" class="g-ghost"/>
+<rect x="550" y="602.5" width="58" height="12" rx="2" class="g-wait"/>
+<text x="8" y="637" class="g-grp">6  시험·반영</text>
+<rect x="549" y="631" width="153" height="4" rx="2" class="g-sum"/>
+<text x="18" y="662.5" class="g-lab"><tspan class="g-no">6.1</tspan> 전체 흐름 시험</text>
+<rect x="550" y="652.5" width="58" height="12" rx="2" class="g-ghost"/>
+<rect x="612" y="652.5" width="58" height="12" rx="2" class="g-wait"/>
+<text x="18" y="685.5" class="g-lab"><tspan class="g-no">6.2</tspan> 실제 서비스 반영</text>
+<rect x="612" y="675.5" width="27" height="12" rx="2" class="g-ghost"/>
+<rect x="674" y="675.5" width="27" height="12" rx="2" class="g-wait"/>
+<line x1="486" y1="44" x2="486" y2="699" class="g-today"/>
+<rect x="424.0" y="701" width="124" height="22" rx="11" class="g-todayb"/>
+<text x="486.0" y="716" text-anchor="middle" class="g-todayt">11/20 주간 리뷰</text></svg><svg class="ganttsvg mob" viewBox="0 0 334.4 642" role="img" aria-label="정기 문자 발송 과제 일정 막대. 11월 20일 기준 14개 항목 완료, 예약 자동 실행기가 2일 늦어져 뒤 항목이 2일씩 밀리고 마지막 반영이 11월 27일에서 12월 1일로 옮겨진다."><text x="106" y="14" class="g-mon">11월</text>
+<text x="304.0" y="14" class="g-mon">12월</text>
+<text x="110.6" y="32" text-anchor="middle" class="g-day">9</text>
+<text x="123.8" y="32" text-anchor="middle" class="g-day">10</text>
+<text x="137.0" y="32" text-anchor="middle" class="g-day">11</text>
+<text x="150.2" y="32" text-anchor="middle" class="g-day">12</text>
+<text x="163.4" y="32" text-anchor="middle" class="g-day">13</text>
+<text x="176.6" y="32" text-anchor="middle" class="g-day">16</text>
+<text x="189.79999999999998" y="32" text-anchor="middle" class="g-day">17</text>
+<text x="202.99999999999997" y="32" text-anchor="middle" class="g-day">18</text>
+<text x="216.2" y="32" text-anchor="middle" class="g-day">19</text>
+<text x="229.4" y="32" text-anchor="middle" class="g-day">20</text>
+<text x="242.6" y="32" text-anchor="middle" class="g-day">23</text>
+<text x="255.79999999999998" y="32" text-anchor="middle" class="g-day">24</text>
+<text x="269.0" y="32" text-anchor="middle" class="g-day">25</text>
+<text x="282.20000000000005" y="32" text-anchor="middle" class="g-day">26</text>
+<text x="295.4" y="32" text-anchor="middle" class="g-day">27</text>
+<text x="308.6" y="32" text-anchor="middle" class="g-day">30</text>
+<text x="321.8" y="32" text-anchor="middle" class="g-day">1</text>
+<line x1="104.0" y1="20" x2="104.0" y2="608" class="g-wk"/>
+<line x1="117.2" y1="38" x2="117.2" y2="608" class="g-dl"/>
+<line x1="130.4" y1="38" x2="130.4" y2="608" class="g-dl"/>
+<line x1="143.6" y1="38" x2="143.6" y2="608" class="g-dl"/>
+<line x1="156.8" y1="38" x2="156.8" y2="608" class="g-dl"/>
+<line x1="170.0" y1="20" x2="170.0" y2="608" class="g-wk"/>
+<line x1="183.2" y1="38" x2="183.2" y2="608" class="g-dl"/>
+<line x1="196.39999999999998" y1="38" x2="196.39999999999998" y2="608" class="g-dl"/>
+<line x1="209.6" y1="38" x2="209.6" y2="608" class="g-dl"/>
+<line x1="222.8" y1="38" x2="222.8" y2="608" class="g-dl"/>
+<line x1="236.0" y1="20" x2="236.0" y2="608" class="g-wk"/>
+<line x1="249.2" y1="38" x2="249.2" y2="608" class="g-dl"/>
+<line x1="262.4" y1="38" x2="262.4" y2="608" class="g-dl"/>
+<line x1="275.6" y1="38" x2="275.6" y2="608" class="g-dl"/>
+<line x1="288.79999999999995" y1="38" x2="288.79999999999995" y2="608" class="g-dl"/>
+<line x1="302.0" y1="20" x2="302.0" y2="608" class="g-wk"/>
+<line x1="315.2" y1="38" x2="315.2" y2="608" class="g-dl"/>
+<line x1="328.4" y1="20" x2="328.4" y2="608" class="g-wk"/>
+<line x1="4" y1="40" x2="330.4" y2="40" class="g-hl"/>
+<text x="4" y="58" class="g-grp">1  발송 대상 관리</text>
+<rect x="105.0" y="52" width="37.599999999999994" height="4" rx="2" class="g-sum"/>
+<text x="10" y="82.0" class="g-lab"><tspan class="g-no">1.1</tspan> 대상 목록 화면</text>
+<rect x="105.0" y="73.0" width="24.4" height="10" rx="2" class="g-done"/>
+<text x="10" y="102.0" class="g-lab"><tspan class="g-no">1.2</tspan> 그룹 편집</text>
+<rect x="131.4" y="93.0" width="11.2" height="10" rx="2" class="g-done"/>
+<text x="10" y="122.0" class="g-lab"><tspan class="g-no">1.3</tspan> 대상 저장</text>
+<rect x="105.0" y="113.0" width="24.4" height="10" rx="2" class="g-done"/>
+<text x="10" y="142.0" class="g-lab"><tspan class="g-no">1.4</tspan> 수신 거부 제외</text>
+<rect x="131.4" y="133.0" width="11.2" height="10" rx="2" class="g-done"/>
+<text x="4" y="162" class="g-grp">2  문자 내용</text>
+<rect x="105.0" y="156" width="64.0" height="4" rx="2" class="g-sum"/>
+<text x="10" y="186.0" class="g-lab"><tspan class="g-no">2.1</tspan> 문안 작성 화면</text>
+<rect x="144.6" y="177.0" width="24.4" height="10" rx="2" class="g-done"/>
+<text x="10" y="206.0" class="g-lab"><tspan class="g-no">2.2</tspan> 자동 넣기</text>
+<rect x="144.6" y="197.0" width="11.2" height="10" rx="2" class="g-done"/>
+<text x="10" y="226.0" class="g-lab"><tspan class="g-no">2.3</tspan> 문안 저장</text>
+<rect x="157.8" y="217.0" width="11.2" height="10" rx="2" class="g-done"/>
+<text x="10" y="246.0" class="g-lab"><tspan class="g-no">2.4</tspan> 발신번호 확인</text>
+<rect x="105.0" y="237.0" width="11.2" height="10" rx="2" class="g-done"/>
+<text x="4" y="266" class="g-grp">3  정기 예약</text>
+<rect x="171.0" y="260" width="90.39999999999999" height="4" rx="2" class="g-sum"/>
+<text x="10" y="290.0" class="g-lab"><tspan class="g-no">3.1</tspan> 주기 설정 화면</text>
+<rect x="171.0" y="281.0" width="24.4" height="10" rx="2" class="g-done"/>
+<text x="10" y="310.0" class="g-lab"><tspan class="g-no">3.2</tspan> 발송일 계산</text>
+<rect x="171.0" y="301.0" width="24.4" height="10" rx="2" class="g-done"/>
+<text x="10" y="330.0" class="g-lab"><tspan class="g-no">3.3</tspan> 예약 실행기</text>
+<rect x="197.39999999999998" y="321.0" width="37.599999999999994" height="10" rx="2" class="g-prog"/>
+<rect x="235.0" y="321.0" width="26.4" height="10" rx="2" class="g-late"/>
+<text x="265.4" y="330.0" class="g-latet">+2일</text>
+<text x="4" y="350" class="g-grp">4  발송 실행</text>
+<rect x="118.2" y="344" width="90.39999999999999" height="4" rx="2" class="g-sum"/>
+<text x="10" y="374.0" class="g-lab"><tspan class="g-no">4.1</tspan> 발송 업체 연동</text>
+<rect x="118.2" y="365.0" width="37.599999999999994" height="10" rx="2" class="g-done"/>
+<text x="10" y="394.0" class="g-lab"><tspan class="g-no">4.2</tspan> 발송 대기열</text>
+<rect x="157.8" y="385.0" width="24.4" height="10" rx="2" class="g-done"/>
+<text x="10" y="414.0" class="g-lab"><tspan class="g-no">4.3</tspan> 재발송</text>
+<rect x="184.2" y="405.0" width="11.2" height="10" rx="2" class="g-done"/>
+<text x="10" y="434.0" class="g-lab"><tspan class="g-no">4.4</tspan> 이력 기록</text>
+<rect x="197.39999999999998" y="425.0" width="11.2" height="10" rx="2" class="g-done"/>
+<text x="4" y="454" class="g-grp">5  결과 확인</text>
+<rect x="197.39999999999998" y="448" width="90.39999999999999" height="4" rx="2" class="g-sum"/>
+<text x="10" y="478.0" class="g-lab"><tspan class="g-no">5.1</tspan> 결과 받기</text>
+<rect x="210.6" y="469.0" width="24.4" height="10" rx="2" class="g-prog"/>
+<text x="10" y="498.0" class="g-lab"><tspan class="g-no">5.2</tspan> 결과 화면</text>
+<rect x="197.39999999999998" y="489.0" width="37.599999999999994" height="10" rx="2" class="g-prog"/>
+<text x="10" y="518.0" class="g-lab"><tspan class="g-no">5.3</tspan> 다시 보내기</text>
+<rect x="237.0" y="509.0" width="11.2" height="10" rx="2" class="g-wait"/>
+<text x="10" y="538.0" class="g-lab"><tspan class="g-no">5.4</tspan> 결과 집계</text>
+<rect x="237.0" y="529.0" width="24.4" height="10" rx="2" class="g-ghost"/>
+<rect x="263.4" y="529.0" width="24.4" height="10" rx="2" class="g-wait"/>
+<text x="4" y="558" class="g-grp">6  시험·반영</text>
+<rect x="263.4" y="552" width="64.0" height="4" rx="2" class="g-sum"/>
+<text x="10" y="582.0" class="g-lab"><tspan class="g-no">6.1</tspan> 전체 시험</text>
+<rect x="263.4" y="573.0" width="24.4" height="10" rx="2" class="g-ghost"/>
+<rect x="289.79999999999995" y="573.0" width="24.4" height="10" rx="2" class="g-wait"/>
+<text x="10" y="602.0" class="g-lab"><tspan class="g-no">6.2</tspan> 서비스 반영</text>
+<rect x="289.79999999999995" y="593.0" width="11.2" height="10" rx="2" class="g-ghost"/>
+<rect x="316.2" y="593.0" width="11.2" height="10" rx="2" class="g-wait"/>
+<line x1="236.0" y1="40" x2="236.0" y2="614" class="g-today"/>
+<rect x="184.0" y="616" width="104" height="22" rx="11" class="g-todayb"/>
+<text x="236.0" y="631" text-anchor="middle" class="g-todayt">11/20 주간 리뷰</text></svg></div>
+    <div class="glegend"><span><i class="a"></i>완료</span><span><i class="b"></i>진행 중</span><span><i class="c"></i>대기</span><span><i class="d"></i>지연된 날</span><span><i class="e"></i>원래 잡았던 날</span></div>
+    <p class="note">예약 자동 실행기 하나가 이틀 늦어지면, 같은 담당의 결과 집계와 그 뒤 시험·반영이 이틀씩 밀리는 것이 그대로 보입니다. 나머지 작업은 영향이 없다는 것도 보입니다.</p>
+  </figure>
+
+  <ol class="steps">
+    <li><span><b>작업 하나는 1~3일 크기로 나눕니다.</b> 그보다 크면 더 나눕니다. 그래야 늦어짐이 하루 단위로 보입니다.</span></li>
+    <li><span><b>상태는 완료 · 진행 중 · 대기 · 지연 네 가지로만 적습니다.</b></span></li>
+    <li><span><b>늦어질 것 같으면 주간 리뷰를 기다리지 않고</b> 사유와 새 날짜를 그때 적습니다.</span></li>
+    <li><span><b>도구는 상관없습니다.</b> 지라든 공유 표든, 대표님이 언제든 열어 볼 수 있으면 됩니다.</span></li>
+  </ol>
+</section>
+
+<section class="sec">
+  <div class="sechead"><span class="secnum">05</span><h2>한눈에 비교</h2></div>
+  <div class="tablewrap"><table class="cmp">
+    <thead><tr><th style="width:17%"></th><th style="width:26%">지금 방식</th><th style="width:29%">개선 방식</th><th>좋은 점</th></tr></thead>
+    <tbody>
+      <tr><td class="key">요청 전달</td><td class="now" data-l="지금">말로, 여러 경로</td><td class="next" data-l="개선">글로 정리, 창구 하나</td><td class="why" data-l="좋은 점">양쪽이 같은 글을 봅니다</td></tr>
+      <tr><td class="key">화면 확인</td><td class="now" data-l="지금">다 만든 뒤 주간 리뷰</td><td class="next" data-l="개선">개발 전 와이어프레임</td><td class="why" data-l="좋은 점">고칠 때 그림만 고칩니다</td></tr>
+      <tr><td class="key">작업 단위</td><td class="now" data-l="지금">과제 통째로</td><td class="next" data-l="개선">프론트·백엔드·서버·API 연동</td><td class="why" data-l="좋은 점">어디서 막혔는지 바로 보입니다</td></tr>
+      <tr><td class="key">진척 보고</td><td class="now" data-l="지금">“금방 됩니다”</td><td class="next" data-l="개선">“21개 중 14개 완료”</td><td class="why" data-l="좋은 점">일정을 숫자로 판단합니다</td></tr>
+      <tr><td class="key">늦어질 때</td><td class="now" data-l="지금">물어봐야 압니다</td><td class="next" data-l="개선">사유와 새 날짜를 먼저 공유</td><td class="why" data-l="좋은 점">다른 과제 순서를 미리 바꿉니다</td></tr>
+      <tr><td class="key">완료 기준</td><td class="now" data-l="지금">“다 됐습니다”</td><td class="next" data-l="개선">와이어프레임과 대조</td><td class="why" data-l="좋은 점">완료의 뜻이 하나가 됩니다</td></tr>
+    </tbody>
+  </table></div>
+</section>
+
+<section class="close">
+  <h2>맺음</h2>
+  <p>한꺼번에 바꿀 필요는 없습니다. 다음에 들어가는 과제 하나에 먼저 적용해 보시길 권합니다. 요구사항을 글로 한 장 정리하고, 와이어프레임으로 확인받고, 주간 리뷰를 WBS 표를 펴 놓고 하는 것. 이 세 가지면 충분합니다.</p>
+</section>
+
+<footer>작성 · 키스톤파트너스 · 2026년 11월</footer>
+
+</div>
+</body>
+</html>
