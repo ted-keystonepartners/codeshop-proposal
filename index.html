@@ -135,6 +135,7 @@ ol.steps{margin:0;padding-left:0;list-style:none;counter-reset:s;display:flex;fl
 ol.steps li{counter-increment:s;display:grid;grid-template-columns:28px minmax(0,1fr);gap:12px;font-size:15.5px;color:var(--ink-2);line-height:1.75}
 ol.steps li::before{content:counter(s);font-family:var(--mono);font-size:12.5px;font-weight:600;color:var(--accent);padding-top:5px}
 ol.steps b{color:var(--ink);font-weight:600}
+a.xlink{color:var(--accent);font-weight:600;text-decoration:none;border-bottom:1px solid currentColor}
 
 blockquote{margin:0;padding:16px 18px;background:var(--panel);border-left:3px solid var(--accent);font-family:var(--mono);font-size:13px;line-height:1.85;color:var(--ink-2);overflow-x:auto}
 
@@ -299,7 +300,7 @@ footer{padding-block:24px;border-top:1px solid var(--rule);font-family:var(--mon
 <section class="sec">
   <div class="sechead"><span class="secnum">05</span><h2>돈이 흐르는 경로</h2></div>
   <div class="body">
-    <p>계약은 둘로 나누되 차감은 한 번입니다. 장례식장이 따로 낼 것은 없습니다.</p>
+    <p>계약은 장례식장마다 2차 PG사와 직접 맺고, 정산도 2차 PG사가 장례식장에 직접 합니다. 차감은 한 번이고, 장례식장이 따로 낼 것은 없습니다.</p>
   </div>
   <figure>
     <figcaption><b>도표 7</b> · 100만원 결제 한 건의 흐름</figcaption>
@@ -314,7 +315,7 @@ footer{padding-block:24px;border-top:1px solid var(--rule);font-family:var(--mon
       <text class="tn" x="350" y="156" text-anchor="middle">− 30,000원 · 3.00%</text>
       <path class="ln" d="M350 170 V192" marker-end="url(#a7)"/>
       <rect class="bxd" x="150" y="198" width="400" height="72" rx="3"/>
-      <text class="tw" x="350" y="228" text-anchor="middle">장례식장 입금 · 따로 낼 것 없음</text>
+      <text class="tw" x="350" y="228" text-anchor="middle">장례식장 입금 · 결제 3일 뒤</text>
       <text class="twn" x="350" y="254" text-anchor="middle">970,000원</text>
       <text class="la" x="16" y="306">차감한 30,000원이 나뉘는 곳</text>
       <path class="ln" d="M16 318 H684"/>
@@ -344,7 +345,7 @@ footer{padding-block:24px;border-top:1px solid var(--rule);font-family:var(--mon
         <tr class="hi"><td class="key">합계</td><td class="num">3.00%</td><td class="num">900,000원</td></tr>
       </tbody>
     </table></div>
-    <p class="note">월 카드 매출 3,000만원 기준. 세금계산서는 결제대행 수수료를 2차 PG사가, 솔루션 이용료를 코드샵이 각각 발행합니다. 결제가 취소되면 코드샵 몫도 함께 환수하는 조건을 계약서에 넣습니다.</p>
+    <p class="note">월 카드 매출 3,000만원 기준. 세금계산서는 결제대행 수수료를 2차 PG사가, 솔루션 이용료를 코드샵이 각각 발행합니다. 결제가 취소되면 코드샵 몫도 함께 환수하는 조건을 계약서에 넣습니다. 장례식장 정산 시점은 2차 PG사가 다른 거래처에 적용하고 있는 결제 3일 뒤 기준입니다.</p>
   </figure>
 </section>
 
@@ -400,14 +401,13 @@ footer{padding-block:24px;border-top:1px solid var(--rule);font-family:var(--mon
 <section class="sec">
   <div class="sechead"><span class="secnum">08</span><h2>진행 방식 제안</h2></div>
   <div class="body">
-    <p>결제 전환은 되돌리기가 어려운 작업입니다. 카드사 심사가 걸려 있고 가맹점 계약이 묶여 있어서, 중간에 범위가 바뀌면 이미 올라간 심사를 다시 받아야 합니다. 화면 수정처럼 고쳐서 넘어갈 수 있는 일이 아닙니다.</p>
-    <p>그래서 세 가지를 함께 지켰으면 합니다.</p>
+    <p>이번 전환을 포함해 개발 과제를 진행하는 방식은 별도 리포트 「업무 방식 개선 제안」에 정리했습니다. 핵심은 두 가지입니다.</p>
   </div>
   <ol class="steps">
-    <li><span><b>범위를 한 장으로 고정합니다.</b> 이번에 하는 것과 하지 않는 것을 적어 둡니다. 특히 1단계에 대면 결제만 포함한다는 점을 명시합니다.</span></li>
-    <li><span><b>요구사항 창구를 하나로 둡니다.</b> 말로 내려온 변경은 그날 안에 글로 옮깁니다. 심사 서류와 계약 조건이 말에 따라 흔들리면 되돌릴 수 없습니다.</span></li>
-    <li><span><b>단계를 쪼개고 되돌릴 수 있게 만듭니다.</b> 가맹점별로 전환을 켜고 끌 수 있게 두면, 문제가 생겨도 한 곳만 되돌리면 됩니다.</span></li>
+    <li><span><b>와이어프레임으로 먼저 맞추고 개발합니다.</b> 요구사항을 글로 정하고, 화면 배치를 와이어프레임으로 확인받은 뒤 개발에 들어갑니다. 요청과 다른 점을 개발 전에 걸러냅니다.</span></li>
+    <li><span><b>진척은 WBS로 봅니다.</b> 과제를 프론트·백엔드·서버·API 연동 작업으로 나눠 담당, 기간, 상태를 적습니다. 어디까지 끝났고 며칠 남았는지가 표로 보입니다.</span></li>
   </ol>
+  <p class="note"><a class="xlink" href="https://ted-keystonepartners.github.io/codeshop-proposal/working-process.html" target="_blank" rel="noopener">업무 방식 개선 제안 보기 →</a></p>
 </section>
 
 <div class="close">
@@ -442,7 +442,7 @@ footer{padding-block:24px;border-top:1px solid var(--rule);font-family:var(--mon
   <div class="tablewrap"><table>
     <thead><tr><th style="width:26%">분류</th><th>항목</th></tr></thead>
     <tbody>
-      <tr><td class="key">요율과 정산</td><td>연매출 30억 초과 가맹점 요율 · 코드샵 몫 전달 주기 · 결제 취소 시 코드샵 몫 환수 · 코드샵이 모집한 가맹점의 귀속</td></tr>
+      <tr><td class="key">요율과 정산</td><td>연매출 30억 초과 가맹점 요율 · 코드샵 몫 전달 주기 · 장례식장 정산 주기 · 결제 취소 시 코드샵 몫 환수 · 코드샵이 모집한 가맹점의 귀속</td></tr>
       <tr><td class="key">등록과 단말</td><td>신규 가맹점 등록 처리 기한 · 단말기 공급 조건 · 지금 쓰는 카드리더기 호환 여부</td></tr>
       <tr><td class="key">연동</td><td>할부 지정 방법 · 단건 승인 한도 · 가상계좌와 결제대금 예치 명세 · 결제 결과 통지 수신 명세 · 소프트웨어 카드단말 연동 규격 · 시험 환경 계정</td></tr>
       <tr><td class="key">이관</td><td>기존 가맹점 이관 절차와 기간 · 전환 기간 중 두 결제대행사 병행 운영</td></tr>
